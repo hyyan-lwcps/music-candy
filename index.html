@@ -220,15 +220,16 @@
        2.6 書頁全螢幕放大檢視彈窗 (方便小三小四看清注音與文字)
        ========================================== -->
   <div id="zoom-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-2 sm:p-4">
-    <div class="w-full max-w-4xl flex justify-between items-center text-white mb-2 px-2">
+    <div class="w-full max-w-5xl flex flex-wrap justify-between items-center gap-2 text-white mb-2 px-2">
       <span id="zoom-caption" class="font-bold text-amber-300 text-sm sm:text-base">📖 第 114 頁</span>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button id="zoom-mode-btn" onclick="toggleZoomDetailMode()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-[#2e1065] rounded-lg text-xs sm:text-sm font-black transition">🔎 特寫放大</button>
         <button onclick="flipZoomPage(-1)" class="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs sm:text-sm font-bold">◀ 上一頁</button>
         <button onclick="flipZoomPage(1)" class="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs sm:text-sm font-bold">下一頁 ▶</button>
         <button onclick="closeZoomModal()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 rounded-lg text-xs sm:text-sm font-bold">✕ 關閉放大</button>
       </div>
     </div>
-    <div id="zoom-content" class="w-full max-w-4xl max-h-[85vh] overflow-auto bg-[#fdfbf5] rounded-xl p-2 sm:p-4 flex items-center justify-center shadow-2xl">
+    <div id="zoom-content" class="w-full max-w-5xl h-[84vh] overflow-auto bg-[#fdfbf5] rounded-xl p-2 sm:p-4 shadow-2xl">
       <!-- 動態填入放大後的書頁圖片或模擬頁 -->
     </div>
   </div>
@@ -1008,173 +1009,156 @@
     // 記錄已確認的圖片實際副檔名 (例如 "114" -> "114.jpg" 或 "114.png")
     const resolvedImgSrcMap = {};
 
-    // 目前全螢幕放大檢視的章節編號
+    // 目前全螢幕放大檢視的章節編號與縮放模式 (false: 完整全頁顯示, true: 特寫放大捲動)
     let activeZoomBookId = null;
+    let isZoomDetailMode = false;
 
     // 圖片副檔名自動相容處理（支援 .jpg / .png / .JPG / .PNG，若在無圖檔環境預覽則顯示故事文本）
-    function handleBookImgError(imgEl, baseName, fallbackText) {
-      const exts = [".jpg", ".png", ".JPG", ".PNG", ".jpeg"];
-      let step = parseInt(imgEl.dataset.tryStep || "0", 10) + 1;
-      if (step < exts.length) {
-        imgEl.dataset.tryStep = String(step);
-        imgEl.src = baseName + exts[step];
-      } else {
-        // 若所有副檔名皆找不到檔案（例如在線上預覽視窗），自動切換顯示該頁文字內容
-        const wrapper = imgEl.parentElement;
-        if (wrapper) {
-          wrapper.innerHTML = `
-            <div class="min-h-[230px] sm:min-h-[270px] w-full flex flex-col justify-between p-4 sm:p-6 text-gray-800 text-left select-none">
-              <div>
-                <div class="flex items-center justify-between border-b-2 border-amber-700/20 pb-2 mb-3">
-                  <span class="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded">圖檔：${baseName}.jpg / .png</span>
-                  <span class="text-[11px] text-gray-400">線上預覽文字模式</span>
-                </div>
-                <p class="text-base sm:text-lg leading-loose whitespace-pre-line font-medium text-[#2b1e16]">${fallbackText}</p>
-              </div>
-              <div class="mt-4 pt-2 border-t border-dashed border-amber-300 text-center text-xs text-amber-800/80">
-                💡 將本 HTML 檔與圖片放進「music candy」同一資料夾開啟，此處即會自動顯示原書掃描圖！
-              </div>
-            </div>
-          `;
-        }
+    function handleBookImgLoad(imgEl, baseName) {
+      const actualSrc = imgEl.getAttribute("src");
+      if (actualSrc) {
+        resolvedImgSrcMap[baseName] = actualSrc;
       }
     }
 
-    function handleBookImgLoad(imgEl, baseName) {
-      resolvedImgSrcMap[baseName] = imgEl.getAttribute("src");
+    function handleBookImgError(imgEl, baseName, fallbackText) {
+      const extensions = [".jpg", ".png", ".JPG", ".PNG", ".jpeg"];
+      const nextStep = parseInt(imgEl.dataset.tryStep || "0", 10) + 1;
+
+      if (nextStep < extensions.length) {
+        imgEl.dataset.tryStep = String(nextStep);
+        imgEl.src = `${baseName}${extensions[nextStep]}`;
+        return;
+      }
+
+      // 若在線上預覽環境尚未放入本地圖片，則優雅顯示對應頁碼的故事文本卡片
+      const formattedText = (fallbackText || "")
+        .replace(/\\n/g, "\n")
+        .split("\n")
+        .map(line => `<p class="mb-2">${line}</p>`)
+        .join("");
+
+      const fallbackBox = document.createElement("div");
+      fallbackBox.className = "w-full max-w-xl mx-auto p-6 sm:p-8 bg-[#fdfbf5] border-2 border-dashed border-[#b48a3e] rounded-xl text-left text-gray-800 leading-relaxed shadow-inner";
+      fallbackBox.innerHTML = `
+        <div class="flex items-center justify-between border-b border-[#d6c7a9] pb-2 mb-3">
+          <span class="text-xs font-black text-[#78350f] bg-amber-100 px-2.5 py-1 rounded">📖 原書文字預覽（圖檔：${baseName}.jpg）</span>
+          <span class="text-[11px] text-gray-500">放入同資料夾即顯示掃描圖</span>
+        </div>
+        <div class="text-sm sm:text-base font-medium">${formattedText}</div>
+      `;
+      if (imgEl.parentNode) {
+        imgEl.parentNode.replaceChild(fallbackBox, imgEl);
+      }
     }
 
-    // 播放輕柔的紙張翻頁音效 (Web Audio API 合成，無外部依賴)
+    // 輕柔紙張翻頁音效 (使用 Web Audio API，無須外部音檔)
     function playPageTurnSound() {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
         const ctx = new AudioCtx();
-        const bufferSize = ctx.sampleRate * 0.14;
+        const duration = 0.14;
+        const bufferSize = ctx.sampleRate * duration;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
         }
         const noise = ctx.createBufferSource();
         noise.buffer = buffer;
 
         const filter = ctx.createBiquadFilter();
         filter.type = "bandpass";
-        filter.frequency.setValueAtTime(1100, ctx.currentTime);
-        filter.Q.value = 1.2;
+        filter.frequency.value = 1200;
 
         const gain = ctx.createGain();
         gain.gain.setValueAtTime(0.08, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
         noise.connect(filter);
         filter.connect(gain);
         gain.connect(ctx.destination);
         noise.start();
       } catch (e) {
-        // 忽略瀏覽器音訊限制
+        // 忽略瀏覽器自動播放限制
       }
     }
 
-    // ==========================================
-    // 渲染 3D 翻頁揭書閱讀器
-    // ==========================================
+    // 渲染指定章節的 3D 翻頁書閱讀器
     function renderFlipBook(bookId) {
       const container = document.getElementById(`flipbook-container-${bookId}`);
-      if (!container) return;
-
       const section = BOOK_SECTIONS[bookId];
       const state = bookState[bookId];
-      const totalPages = section.pages.length;
+      if (!container || !section || !state) return;
 
-      if (state.currentIndex >= totalPages) state.currentIndex = totalPages - 1;
-      if (state.currentIndex < 0) state.currentIndex = 0;
-
+      const total = section.pages.length;
       const idx = state.currentIndex;
-      const currentItem = section.pages[idx];
-      const pageBadgeText = `${currentItem.label}（${idx + 1} / ${totalPages}）`;
-      const initialSrc = resolvedImgSrcMap[currentItem.baseName] || `${currentItem.baseName}.jpg`;
+      const item = section.pages[idx];
+      const initialSrc = resolvedImgSrcMap[item.baseName] || `${item.baseName}.jpg`;
+      const safeFallback = item.fallbackText.replace(/"/g, "&quot;").replace(/\n/g, "\\n");
 
-      // 產生頁碼快速跳轉膠囊按鈕
-      let pillsHtml = "";
-      for (let i = 0; i < totalPages; i++) {
-        const activeClass = i === idx
-          ? "bg-amber-400 text-[#2e1065] font-black ring-2 ring-amber-200"
-          : "bg-white/15 text-amber-100 hover:bg-white/30";
-        pillsHtml += `<button onclick="jumpBookPage(${bookId}, ${i})" class="px-2.5 py-1 rounded-full text-xs transition ${activeClass}">${section.pages[i].baseName}</button>`;
-      }
-
-      // 轉義 fallbackText 以便安全放入 HTML 屬性中
-      const safeFallback = currentItem.fallbackText.replace(/"/g, "&quot;").replace(/\n/g, "\\n");
+      const pagePills = section.pages
+        .map((p, i) => {
+          const activeClass = i === idx
+            ? "bg-amber-400 text-[#2e1065] font-black border-amber-500 shadow-sm"
+            : "bg-white/80 hover:bg-amber-100 text-[#5c3a18] border-[#c8b99c]";
+          return `<button onclick="jumpBookPage(${bookId}, ${i})" class="px-2 py-0.5 rounded text-[11px] border transition ${activeClass}">${p.baseName}</button>`;
+        })
+        .join("");
 
       container.innerHTML = `
-        <div class="book-cover rounded-2xl p-3 sm:p-5 text-white">
-          <!-- 書本頂部工具列：章節標題 + 放大閱讀按鈕 -->
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-amber-400/30">
+        <div class="book-cover rounded-2xl p-3 sm:p-4 text-white">
+          <!-- 書本頂部資訊與放大按鈕 -->
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3 px-1">
             <div>
-              <h4 class="font-black text-amber-300 text-sm sm:text-base flex items-center gap-1.5">
-                <span>📖 ${section.title}</span>
-                <span class="bg-amber-400/20 text-amber-200 text-xs px-2 py-0.5 rounded-full">${section.pageRangeLabel}</span>
-              </h4>
+              <h4 class="font-black text-amber-300 text-sm sm:text-base">${section.title}</h4>
+              <p class="text-xs text-amber-100/80">${section.pageRangeLabel} • 目前檢視：<strong>${item.label}</strong> (${idx + 1} / ${total})</p>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button onclick="openZoomModal(${bookId})" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-[#2e1065] font-black rounded-lg text-xs shadow transition flex items-center gap-1">
-                <span>🔍 放大閱讀</span>
-              </button>
-            </div>
+            <button onclick="openZoomModal(${bookId})" class="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-[#2e1065] font-black rounded-xl text-xs sm:text-sm shadow transition flex items-center gap-1">
+              <span>🔍 放大閱讀</span>
+            </button>
           </div>
 
-          <!-- 3D 翻頁書舞台 (支援左右點擊與觸控滑動翻頁) -->
-          <div class="book-stage relative my-2 px-1 sm:px-3">
-            <div id="book-paper-${bookId}" 
-              ontouchstart="handleBookTouchStart(event)" 
+          <!-- 3D 書頁舞台 (支援左右滑動與點擊頁緣翻頁) -->
+          <div class="book-stage">
+            <div id="book-paper-${bookId}"
+              ontouchstart="handleBookTouchStart(event)"
               ontouchend="handleBookTouchEnd(${bookId}, event)"
-              class="book-paper rounded-r-xl rounded-l-sm overflow-hidden transition-all">
+              class="book-paper rounded-xl p-2 sm:p-4 min-h-[260px] flex items-center justify-center overflow-hidden select-none">
               
-              <!-- 書頁頂部頁碼標示 -->
-              <div class="bg-[#f5eedc] px-4 py-1.5 border-b border-[#e2d6bc] flex items-center justify-between text-xs font-bold text-[#78350f]">
-                <span>神奇柑仔店 4〈音樂果〉</span>
-                <span>${pageBadgeText}</span>
+              <!-- 左側隱形點擊翻上一頁熱區 -->
+              ${idx > 0 ? `<div onclick="flipBookPage(${bookId}, -1)" title="點擊翻回上一頁" class="hidden sm:flex absolute left-0 top-0 bottom-0 w-12 z-10 cursor-pointer items-center justify-center opacity-0 hover:opacity-100 bg-gradient-to-r from-black/15 to-transparent text-[#5c3a18] font-black text-xl transition">◀</div>` : ""}
+
+              <!-- 書頁內容區 -->
+              <div id="book-content-${bookId}" class="w-full flex items-center justify-center">
+                <img src="${initialSrc}" alt="${item.label}" data-try-step="0"
+                  onclick="openZoomModal(${bookId})"
+                  title="點擊可全螢幕放大檢視書頁"
+                  onload="handleBookImgLoad(this, '${item.baseName}')"
+                  onerror="handleBookImgError(this, '${item.baseName}', '${safeFallback}')"
+                  class="max-h-[430px] sm:max-h-[500px] w-auto max-w-full object-contain mx-auto rounded shadow cursor-zoom-in">
               </div>
 
-              <!-- 實際書頁內容區 -->
-              <div id="book-content-${bookId}" class="relative">
-                <div class="w-full flex flex-col items-center justify-center min-h-[260px] sm:min-h-[360px] select-none">
-                  <img src="${initialSrc}" alt="${pageBadgeText}" data-try-step="0"
-                    onload="handleBookImgLoad(this, '${currentItem.baseName}')"
-                    onerror="handleBookImgError(this, '${currentItem.baseName}', '${safeFallback}')"
-                    class="max-h-[480px] w-auto max-w-full object-contain rounded shadow-sm mx-auto pointer-events-none">
-                </div>
-              </div>
-
-              <!-- 左右兩側快捷點擊翻頁感應區 (點書頁左右邊緣即可翻頁) -->
-              <button onclick="flipBookPage(${bookId}, -1)" aria-label="上一頁"
-                class="hidden sm:flex absolute left-0 top-10 bottom-10 w-12 items-center justify-start pl-2 opacity-0 hover:opacity-100 transition bg-gradient-to-r from-black/15 to-transparent text-amber-900 font-black text-xl">
-                ◀
-              </button>
-              <button onclick="flipBookPage(${bookId}, 1)" aria-label="下一頁"
-                class="hidden sm:flex absolute right-0 top-10 bottom-10 w-12 items-center justify-end pr-2 opacity-0 hover:opacity-100 transition bg-gradient-to-l from-black/15 to-transparent text-amber-900 font-black text-xl">
-                ▶
-              </button>
+              <!-- 右側隱形點擊翻下一頁熱區 -->
+              ${idx < total - 1 ? `<div onclick="flipBookPage(${bookId}, 1)" title="點擊翻到下一頁" class="hidden sm:flex absolute right-0 top-0 bottom-0 w-12 z-10 cursor-pointer items-center justify-center opacity-0 hover:opacity-100 bg-gradient-to-l from-black/15 to-transparent text-[#5c3a18] font-black text-xl transition">▶</div>` : ""}
             </div>
           </div>
 
-          <!-- 底部翻頁控制列 + 頁碼快速導覽 -->
-          <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <button onclick="flipBookPage(${bookId}, -1)" ${idx === 0 ? "disabled" : ""}
-              class="w-full sm:w-auto px-4 py-2 rounded-xl font-bold text-sm transition flex items-center justify-center gap-1 ${idx === 0 ? "bg-white/10 text-gray-400 cursor-not-allowed" : "bg-amber-100 hover:bg-white text-[#2e1065] shadow"}">
-              <span>◀ 上一頁</span>
-            </button>
-
-            <div class="flex flex-wrap justify-center gap-1 max-w-md">
-              ${pillsHtml}
+          <!-- 底部翻頁按鈕與快速頁碼列 -->
+          <div class="mt-3 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+              <button onclick="flipBookPage(${bookId}, -1)" ${idx === 0 ? "disabled" : ""} class="px-3.5 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition ${idx === 0 ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-amber-100 hover:bg-amber-200 text-[#4a2c18]"}">
+                ◀ 上一頁
+              </button>
+              <span class="text-xs text-amber-200 font-bold sm:hidden">${idx + 1} / ${total} 頁</span>
+              <button onclick="flipBookPage(${bookId}, 1)" ${idx === total - 1 ? "disabled" : ""} class="px-3.5 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition ${idx === total - 1 ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-amber-100 hover:bg-amber-200 text-[#4a2c18]"}">
+                下一頁 ▶
+              </button>
             </div>
-
-            <button onclick="flipBookPage(${bookId}, 1)" ${idx === totalPages - 1 ? "disabled" : ""}
-              class="w-full sm:w-auto px-4 py-2 rounded-xl font-bold text-sm transition flex items-center justify-center gap-1 ${idx === totalPages - 1 ? "bg-white/10 text-gray-400 cursor-not-allowed" : "bg-amber-400 hover:bg-amber-300 text-[#2e1065] font-black shadow"}">
-              <span>下一頁 ▶</span>
-            </button>
+            <div class="flex flex-wrap justify-center gap-1">
+              ${pagePills}
+            </div>
           </div>
         </div>
       `;
@@ -1184,57 +1168,75 @@
     function flipBookPage(bookId, direction) {
       const section = BOOK_SECTIONS[bookId];
       const state = bookState[bookId];
-      const totalPages = section.pages.length;
-      const targetIndex = state.currentIndex + direction;
+      if (!section || !state) return;
 
-      if (targetIndex < 0 || targetIndex >= totalPages) return;
+      const targetIndex = state.currentIndex + direction;
+      if (targetIndex < 0 || targetIndex >= section.pages.length) return;
 
       const paperEl = document.getElementById(`book-paper-${bookId}`);
       const contentEl = document.getElementById(`book-content-${bookId}`);
 
       if (paperEl && contentEl) {
-        // 複製當前畫面作為 3D 翻轉書頁圖層
         const leaf = document.createElement("div");
         leaf.className = `flip-leaf-overlay ${direction > 0 ? "animate-flip-next" : "animate-flip-prev"}`;
         leaf.innerHTML = contentEl.innerHTML;
         paperEl.appendChild(leaf);
-
         playPageTurnSound();
 
         // 更新頁碼並重新渲染底層新頁面
         state.currentIndex = targetIndex;
         setTimeout(() => {
           renderFlipBook(bookId);
-        }, 260);
+        }, 280);
       } else {
         state.currentIndex = targetIndex;
         renderFlipBook(bookId);
       }
     }
 
+    // 點擊底部頁碼膠囊快速跳頁
     function jumpBookPage(bookId, targetIndex) {
       const state = bookState[bookId];
-      if (state.currentIndex === targetIndex) return;
-      const dir = targetIndex > state.currentIndex ? 1 : -1;
-      state.currentIndex = targetIndex - dir;
-      flipBookPage(bookId, dir);
-    }
+      if (!state || state.currentIndex === targetIndex) return;
+      const direction = targetIndex > state.currentIndex ? 1 : -1;
+      const paperEl = document.getElementById(`book-paper-${bookId}`);
+      const contentEl = document.getElementById(`book-content-${bookId}`);
 
-    // 觸控滑動翻頁支援 (iPad / 平板左右滑動)
-    let touchStartX = 0;
-    function handleBookTouchStart(e) {
-      if (e.touches && e.touches.length > 0) {
-        touchStartX = e.touches[0].clientX;
+      if (paperEl && contentEl) {
+        const leaf = document.createElement("div");
+        leaf.className = `flip-leaf-overlay ${direction > 0 ? "animate-flip-next" : "animate-flip-prev"}`;
+        leaf.innerHTML = contentEl.innerHTML;
+        paperEl.appendChild(leaf);
+        playPageTurnSound();
+        state.currentIndex = targetIndex;
+        setTimeout(() => {
+          renderFlipBook(bookId);
+        }, 280);
+      } else {
+        state.currentIndex = targetIndex;
+        renderFlipBook(bookId);
       }
     }
+
+    // 手機與平板觸控左右滑動翻頁
+    let bookTouchStartX = 0;
+    let bookTouchStartY = 0;
+
+    function handleBookTouchStart(e) {
+      if (!e.touches || e.touches.length === 0) return;
+      bookTouchStartX = e.touches[0].clientX;
+      bookTouchStartY = e.touches[0].clientY;
+    }
+
     function handleBookTouchEnd(bookId, e) {
       if (!e.changedTouches || e.changedTouches.length === 0) return;
-      const diffX = e.changedTouches[0].clientX - touchStartX;
-      if (Math.abs(diffX) > 45) {
-        if (diffX < 0) {
-          flipBookPage(bookId, 1); // 向左滑 -> 翻下一頁
+      const deltaX = e.changedTouches[0].clientX - bookTouchStartX;
+      const deltaY = e.changedTouches[0].clientY - bookTouchStartY;
+      if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX < 0) {
+          flipBookPage(bookId, 1);
         } else {
-          flipBookPage(bookId, -1); // 向右滑 -> 翻上一頁
+          flipBookPage(bookId, -1);
         }
       }
     }
@@ -1244,6 +1246,7 @@
     // ==========================================
     function openZoomModal(bookId) {
       activeZoomBookId = bookId;
+      isZoomDetailMode = false;
       updateZoomModalContent();
       document.getElementById("zoom-modal").classList.remove("hidden");
     }
@@ -1251,6 +1254,11 @@
     function closeZoomModal() {
       document.getElementById("zoom-modal").classList.add("hidden");
       activeZoomBookId = null;
+    }
+
+    function toggleZoomDetailMode() {
+      isZoomDetailMode = !isZoomDetailMode;
+      updateZoomModalContent();
     }
 
     function flipZoomPage(dir) {
@@ -1272,14 +1280,37 @@
 
       document.getElementById("zoom-caption").innerText = `${section.title} — ${item.label} (${state.currentIndex + 1}/${total})`;
 
+      const modeBtn = document.getElementById("zoom-mode-btn");
+      if (modeBtn) {
+        modeBtn.innerText = isZoomDetailMode ? "📐 完整全頁" : "🔎 特寫放大";
+      }
+
+      // 完整全頁模式：自動依螢幕高度縮放，100% 完整顯示整頁不裁切；特寫放大模式：寬度填滿並可從頂部完整捲動
+      const imgClass = isZoomDetailMode
+        ? "w-full max-w-3xl h-auto mx-auto rounded shadow-lg cursor-zoom-out"
+        : "max-h-[79vh] w-auto max-w-full object-contain mx-auto rounded shadow-lg cursor-zoom-in";
+
       const zoomContainer = document.getElementById("zoom-content");
+      zoomContainer.scrollTop = 0;
       zoomContainer.innerHTML = `
-        <img src="${initialSrc}" alt="${item.label}" data-try-step="0"
-          onload="handleBookImgLoad(this, '${item.baseName}')"
-          onerror="handleBookImgError(this, '${item.baseName}', '${safeFallback}')"
-          class="w-full h-auto max-w-3xl rounded shadow-lg">
+        <div class="min-h-full w-full flex flex-col justify-center items-center">
+          <img src="${initialSrc}" alt="${item.label}" data-try-step="0"
+            onclick="toggleZoomDetailMode()"
+            title="點擊圖片切換「完整全頁 / 特寫放大」"
+            onload="handleBookImgLoad(this, '${item.baseName}')"
+            onerror="handleBookImgError(this, '${item.baseName}', '${safeFallback}')"
+            class="${imgClass}">
+        </div>
       `;
     }
+
+    // 支援鍵盤左右方向鍵翻頁與 Esc 關閉放大視窗
+    document.addEventListener("keydown", (e) => {
+      if (!activeZoomBookId) return;
+      if (e.key === "ArrowLeft") flipZoomPage(-1);
+      else if (e.key === "ArrowRight") flipZoomPage(1);
+      else if (e.key === "Escape") closeZoomModal();
+    });
 
     // ==========================================
     // 通用彈窗、導覽切換與教師快捷跳轉控制
