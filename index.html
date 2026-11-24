@@ -3,32 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>神奇柑仔店錢天堂：〈音樂果〉互動劇場</title>
+  <title>《神奇柑仔店錢天堂：〈音樂果〉》互動劇場</title>
   <!-- 載入 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 載入清晰易讀的繁體中文字型 -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- 載入繁體中文字型與完整彩色 Emoji 支援字型 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
     * {
-      font-family: 'Noto Sans TC', "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: 'Noto Sans TC', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
     }
 
-    /* 錢天堂維多利亞復古與和風奇幻背景紋理 */
+    /* 錢天堂懷舊和風深紫梅色與金箔背景紋理 */
     body {
-      background-color: #1a1026;
-      background-image: 
-        radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.16) 0%, transparent 42%),
-        radial-gradient(circle at 85% 80%, rgba(126, 34, 206, 0.22) 0%, transparent 48%),
+      background-color: #24113b;
+      background-image:
+        radial-gradient(circle at 18% 20%, rgba(245, 158, 11, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 82% 80%, rgba(59, 29, 94, 0.55) 0%, transparent 50%),
         repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 2px, transparent 2px, transparent 10px);
       min-height: 100vh;
       color: #2b1e16;
     }
 
-    /* 溫暖羊皮紙與古錢幣金主卡片 */
+    /* 溫暖奶油羊皮紙主卡片 (#fdf8ee) */
     .washi-card {
-      background: rgba(253, 249, 240, 0.98);
-      border: 3px solid #b48a3e;
-      box-shadow: 0 22px 48px rgba(0, 0, 0, 0.6), inset 0 0 28px rgba(180, 138, 62, 0.16);
+      background: #fdf8ee;
+      border: 3px solid #d97706;
+      box-shadow: 0 22px 48px rgba(0, 0, 0, 0.6), inset 0 0 28px rgba(217, 119, 6, 0.14);
     }
 
     /* 頂部七大分頁導覽按鈕 */
@@ -36,24 +36,24 @@
       transition: all 0.25s ease;
     }
     .tab-btn.locked {
-      opacity: 0.58;
+      opacity: 0.62;
       cursor: not-allowed;
-      background-color: #e6dec8;
+      background-color: #ede4d0;
       color: #786c5e;
     }
     .tab-btn.unlocked {
       cursor: pointer;
-      background-color: #f4ebd4;
+      background-color: #f6edd9;
       color: #5c3a18;
     }
     .tab-btn.unlocked:hover {
-      background-color: #e8d8b5;
+      background-color: #ebd9b5;
     }
     .tab-btn.active {
-      background: linear-gradient(135deg, #581c87, #3b0764) !important;
+      background: linear-gradient(135deg, #3b1d5e, #281142) !important;
       color: #fde68a !important;
-      border-color: #d97706 !important;
-      box-shadow: 0 -3px 12px rgba(88, 28, 135, 0.3);
+      border-color: #f59e0b !important;
+      box-shadow: 0 -3px 12px rgba(59, 29, 94, 0.35);
     }
 
     /* 劇場抉擇按鈕特效 */
@@ -64,13 +64,13 @@
     }
     .choice-card:hover {
       transform: translateY(-2px);
-      border-color: #7c3aed;
-      box-shadow: 0 8px 18px rgba(124, 58, 237, 0.15);
+      border-color: #3b1d5e;
+      box-shadow: 0 8px 18px rgba(59, 29, 94, 0.16);
     }
     .choice-card.selected-a {
       border-color: #d97706;
       background: #fffbeb;
-      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25);
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.28);
     }
     .choice-card.selected-b {
       border-color: #059669;
@@ -111,13 +111,20 @@
       background: #24150e;
     }
 
-    /* 淡入動畫 */
+    /* 淡入與音符漂浮動畫 */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .animate-fade-in {
       animation: fadeIn 0.35s ease-out forwards;
+    }
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .animate-float {
+      animation: floatSlow 3s ease-in-out infinite;
     }
 
     /* ==========================================
@@ -128,12 +135,12 @@
     }
     .book-cover {
       background: linear-gradient(135deg, #4a2c18 0%, #2c1810 100%);
-      border: 3px solid #b48a3e;
+      border: 3px solid #d97706;
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45), inset 0 0 15px rgba(0, 0, 0, 0.6);
     }
     .book-paper {
       position: relative;
-      background: #fdfbf5;
+      background: #fdf8ee;
       box-shadow:
         inset 18px 0 24px -12px rgba(60, 40, 20, 0.28),
         3px 3px 0 #ebe3d0,
@@ -173,7 +180,7 @@
     .flip-leaf-overlay {
       position: absolute;
       inset: 0;
-      background: #fdfbf5;
+      background: #fdf8ee;
       transform-origin: left center;
       backface-visibility: hidden;
       pointer-events: none;
@@ -195,13 +202,13 @@
        教師快捷跳轉彈窗
        ========================================== -->
   <div id="teacher-modal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
-    <div class="bg-[#fdfbf7] border-4 border-[#78350f] rounded-2xl max-w-md w-full p-6 shadow-2xl text-center animate-fade-in">
+    <div class="bg-[#fdf8ee] border-4 border-[#78350f] rounded-2xl max-w-md w-full p-6 shadow-2xl text-center animate-fade-in">
       <div class="text-3xl mb-2">🏫</div>
       <h3 class="text-xl font-black text-[#78350f] mb-1">教師課堂快捷控制</h3>
       <p class="text-sm text-gray-600 mb-3">驗證通過後可一鍵解鎖並直接跳轉至指定分頁：</p>
       
       <input type="password" id="teacher-pin-input" placeholder="請輸入教師授權碼" 
-        class="w-full p-3 border-2 border-[#b48a3e] rounded-xl text-center text-lg font-bold mb-3 bg-white focus:outline-none focus:border-purple-700">
+        class="w-full p-3 border-2 border-[#d97706] rounded-xl text-center text-lg font-bold mb-3 bg-white focus:outline-none focus:border-[#3b1d5e]">
       
       <div class="grid grid-cols-2 gap-2 mb-4">
         <button onclick="executeTeacherJump(1)" class="p-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg text-xs sm:text-sm border border-amber-400">1. 第一幕 (p.114-123)</button>
@@ -226,13 +233,13 @@
     <div class="w-full max-w-5xl flex flex-wrap justify-between items-center gap-2 text-white mb-2 px-2">
       <span id="zoom-caption" class="font-bold text-amber-300 text-sm sm:text-base">📖 第 114 頁</span>
       <div class="flex items-center gap-1.5 sm:gap-2">
-        <button id="zoom-mode-btn" onclick="toggleZoomDetailMode()" class="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-[#2e1065] rounded-lg text-xs sm:text-sm font-black transition">🔎 特寫放大</button>
+        <button id="zoom-mode-btn" onclick="toggleZoomDetailMode()" class="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-[#3b1d5e] rounded-lg text-xs sm:text-sm font-black transition">🔎 特寫放大</button>
         <button onclick="flipZoomPage(-1)" class="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs sm:text-sm font-bold">◀ 上一頁</button>
         <button onclick="flipZoomPage(1)" class="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs sm:text-sm font-bold">下一頁 ▶</button>
         <button onclick="closeZoomModal()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 rounded-lg text-xs sm:text-sm font-bold">✕ 關閉放大</button>
       </div>
     </div>
-    <div id="zoom-content" class="w-full max-w-5xl h-[84vh] overflow-auto bg-[#fdfbf5] rounded-xl p-2 sm:p-4 shadow-2xl">
+    <div id="zoom-content" class="w-full max-w-5xl h-[84vh] overflow-auto bg-[#fdf8ee] rounded-xl p-2 sm:p-4 shadow-2xl">
       <!-- 動態填入放大後的書頁圖片或模擬頁 -->
     </div>
   </div>
@@ -243,14 +250,14 @@
   <div id="card-lightbox-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-3 sm:p-6">
     <div class="w-full max-w-3xl flex items-center justify-between text-white mb-3 px-1">
       <div class="flex items-center gap-2">
-        <span class="text-xl">🃏</span>
+        <span class="text-xl">🏆</span>
         <h3 id="lightbox-card-title" class="font-black text-amber-300 text-base sm:text-xl">誠實勇氣卡</h3>
       </div>
       <button onclick="closeCardLightbox()" class="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow">
         ✕ 關閉欣賞
       </button>
     </div>
-    <div id="lightbox-card-body" class="w-full max-w-3xl bg-[#1f120b] border-4 border-[#d97706] rounded-2xl p-2 sm:p-4 shadow-2xl flex flex-col items-center">
+    <div id="lightbox-card-body" class="w-full max-w-3xl bg-[#1f120b] border-4 border-[#f59e0b] rounded-2xl p-2 sm:p-4 shadow-2xl flex flex-col items-center">
       <!-- 動態填入圖卡大圖 -->
     </div>
     <p id="lightbox-card-quote" class="mt-3 text-center text-amber-100 text-xs sm:text-sm max-w-2xl font-medium leading-relaxed"></p>
@@ -260,44 +267,44 @@
        通用訊息提示彈窗
        ========================================== -->
   <div id="custom-modal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
-    <div class="bg-[#fdfbf7] border-4 border-[#b48a3e] rounded-2xl max-w-md w-full p-6 shadow-2xl text-center animate-fade-in">
-      <div id="modal-icon" class="text-4xl mb-2">🪙</div>
-      <h3 id="modal-title" class="text-xl font-black text-[#3b0764] mb-2">提示訊息</h3>
+    <div class="bg-[#fdf8ee] border-4 border-[#d97706] rounded-2xl max-w-md w-full p-6 shadow-2xl text-center animate-fade-in">
+      <div id="modal-icon" class="text-4xl mb-2">✨</div>
+      <h3 id="modal-title" class="text-xl font-black text-[#3b1d5e] mb-2">提示訊息</h3>
       <p id="modal-message" class="text-sm sm:text-base text-gray-700 whitespace-pre-line leading-relaxed mb-5"></p>
-      <button onclick="closeModal()" class="w-full py-2.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow hover:opacity-95 transition">
+      <button onclick="closeModal()" class="w-full py-2.5 bg-gradient-to-r from-[#3b1d5e] to-[#261140] text-amber-200 font-bold rounded-xl shadow hover:opacity-95 transition">
         我知道了
       </button>
     </div>
   </div>
 
   <!-- ==========================================
-       故事重點參考彈窗
+       故事全文參考彈窗
        ========================================== -->
   <div id="fullstory-modal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
-    <div class="bg-[#fdfbf7] border-4 border-[#581c87] rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
+    <div class="bg-[#fdf8ee] border-4 border-[#3b1d5e] rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
       <div class="p-4 sm:p-5 border-b-2 border-[#d6c7a9] flex items-center justify-between bg-purple-50 rounded-t-xl">
-        <h3 class="text-lg sm:text-xl font-black text-[#3b0764]">📖 《音樂果》故事重點參考室</h3>
-        <button onclick="closeFullStoryModal()" class="px-3 py-1 bg-purple-900 text-amber-200 font-bold rounded-lg text-sm hover:opacity-90">✕ 關閉</button>
+        <h3 class="text-lg sm:text-xl font-black text-[#3b1d5e]">📖 《音樂果》故事全文參考室</h3>
+        <button onclick="closeFullStoryModal()" class="px-3 py-1 bg-[#3b1d5e] text-amber-200 font-bold rounded-lg text-sm hover:opacity-90">✕ 關閉</button>
       </div>
       <div class="p-5 overflow-y-auto space-y-4 text-sm sm:text-base text-gray-800 leading-relaxed">
-        <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200">
+        <div class="bg-amber-50/80 p-4 rounded-xl border border-amber-300">
           <h4 class="font-black text-[#78350f] mb-1">【第一部分：昏暗小巷的奇遇（p.114–123）】</h4>
           <p>10 歲的立花響因為佐佐木老師很嚴格，非常討厭去上鋼琴課。在去鋼琴教室的路上，他被〈土耳其進行曲〉吸引走進小巷，遇見身穿紫紅色古錢幣和服的白髮老闆娘「紅子」。</p>
           <p class="mt-2">紅子用<strong>平成十三年的十元硬幣</strong>，賣給響一小袋<strong>「莫札特風味音樂果」</strong>，並警告他：「音樂果可以讓人充分享受音樂，但要小心，千萬不要得意忘形。」</p>
         </div>
-        <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200">
+        <div class="bg-amber-50/80 p-4 rounded-xl border border-amber-300">
           <h4 class="font-black text-[#78350f] mb-1">【第二部分：一夕成名的鋼琴神童（p.123–129）】</h4>
           <p>個性急躁的響立刻吃光袋子裡<strong>高音譜記號、八分音符、二分音符和延音符號</strong>形狀的小餅乾。走進教室後，他的手指自動完美彈奏出〈土耳其進行曲〉！</p>
           <p class="mt-2">響一夕之間被捧為「鋼琴神童」，整天忙著接受採訪，平時不再練琴。受邀參加大型鋼琴比賽前一周收到指定曲樂譜，他也連看都不看一眼。</p>
         </div>
-        <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200">
+        <div class="bg-amber-50/80 p-4 rounded-xl border border-amber-300">
           <h4 class="font-black text-[#78350f] mb-1">【第三部分：舞台危機與休息室抉擇（p.129–140）】</h4>
           <p>比賽當天座無虛席，響打開樂譜才發現指定曲是<strong>舒曼的〈幻想曲〉</strong>，雙手在琴鍵上一動也不動！他狼狽逃進休息室查看空袋子背面，才發現注意事項寫明：<strong>「每袋音樂果只有一位音樂家的口味，無法演奏其他作曲家的樂曲。」</strong></p>
           <p class="mt-2">此時紅子出現在休息室，拿出免費的「舒曼風味音樂果」讓他挑選。</p>
         </div>
-        <div class="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200">
+        <div class="bg-emerald-50/80 p-4 rounded-xl border border-emerald-300">
           <h4 class="font-black text-emerald-900 mb-1">【第四部分：消消口香糖與重新出發（p.140–144）】</h4>
-          <p>響低頭拒絕了舒曼音樂果，流淚承認不該靠不勞而獲的方法贏得比賽，只希望能回到還沒吃音樂果之前。紅子於是遞給他<strong>淡藍色包裝紙的「消消口香糖」</strong>，消除之前的時間與發生的事。</p>
+          <p>響低頭拒絕了舒曼音樂果，流淚承認不該靠不勞而獲的方法贏得比賽，只希望能回到還沒吃音樂果之前。紅子於是遞給他<strong>淡藍色紙包裝的薄荷「消消口香糖」</strong>，消除之前的時間與發生的事。</p>
           <p class="mt-2">回到小巷的響雖然忘記了剛剛的經歷，心裡卻有一種異樣的感覺——今天他不像平時那麼討厭上鋼琴課了。</p>
         </div>
       </div>
@@ -312,26 +319,26 @@
     <!-- 頂部常駐導覽列 + 招牌橫幅 -->
     <header class="text-center border-b-2 border-[#d6c7a9] pb-4 mb-6 relative">
       <div class="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-dashed border-[#d6c7a9]">
-        <button onclick="goHome()" class="px-3 py-1.5 bg-[#f3ead3] hover:bg-[#e6d6b3] text-[#5c3a18] font-bold rounded-lg text-xs sm:text-sm border border-[#b48a3e] transition flex items-center gap-1">
+        <button onclick="goHome()" class="px-3.5 py-2 bg-[#f3ead3] hover:bg-[#e6d6b3] text-[#5c3a18] font-bold rounded-xl text-xs sm:text-sm border border-[#d97706] transition flex items-center gap-1.5">
           <span>🏠 返回首頁</span>
         </button>
         <div class="flex items-center gap-2">
-          <button onclick="openFullStoryModal()" class="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold rounded-lg text-xs sm:text-sm border border-purple-400 transition flex items-center gap-1">
-            <span>📖 故事重點參考</span>
+          <button onclick="openFullStoryModal()" class="px-3.5 py-2 bg-purple-100 hover:bg-purple-200 text-[#3b1d5e] font-bold rounded-xl text-xs sm:text-sm border border-purple-400 transition flex items-center gap-1.5">
+            <span>📖 故事全文參考</span>
           </button>
-          <button onclick="openTeacherModal()" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg text-xs sm:text-sm border border-amber-400 transition flex items-center gap-1">
+          <button onclick="openTeacherModal()" class="px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-xl text-xs sm:text-sm border border-amber-400 transition flex items-center gap-1.5">
             <span>🔑 教師快捷控制</span>
           </button>
         </div>
       </div>
 
-      <div class="inline-flex items-center gap-2 bg-[#3b0764] text-amber-200 px-4 py-1 rounded-full text-xs sm:text-sm font-bold tracking-wider mb-2 shadow">
-        <span>🪙 神奇柑仔店錢天堂</span>
+      <div class="inline-flex items-center gap-2 bg-[#3b1d5e] text-amber-200 px-4 py-1 rounded-full text-xs sm:text-sm font-bold tracking-wider mb-2 shadow">
+        <span>✨ 神奇柑仔店錢天堂</span>
         <span>•</span>
         <span>小三、小四互動閱讀劇場</span>
       </div>
-      <h1 class="text-2xl sm:text-3xl font-black text-[#2e1065] tracking-tight">
-        🎵 故事劇場：《我不想吃音樂果！》
+      <h1 class="text-xl sm:text-3xl font-black text-[#3b1d5e] tracking-tight">
+        🎵 《神奇柑仔店錢天堂：〈音樂果〉》互動劇場
       </h1>
       <p class="text-sm sm:text-base text-[#78350f] font-medium mt-1">
         「如果我是立花響，在關鍵時刻我會怎麼做？」
@@ -342,11 +349,94 @@
          歡迎首頁畫面 (#welcome-screen)
          ========================================== -->
     <section id="welcome-screen" class="animate-fade-in text-center py-2 sm:py-4">
-      <div class="bg-gradient-to-br from-[#2e1065] via-[#3b0764] to-[#1e1b4b] text-white rounded-2xl p-6 sm:p-8 mb-6 border-2 border-[#d97706] shadow-xl">
-        <div class="inline-block bg-amber-400/20 border border-amber-300/40 text-amber-200 text-xs font-bold px-3 py-1 rounded-full mb-3">
+      <div class="bg-gradient-to-br from-[#3b1d5e] via-[#2c1447] to-[#1d0d30] text-white rounded-2xl p-6 sm:p-8 mb-6 border-2 border-[#f59e0b] shadow-xl">
+        <div class="inline-block bg-amber-400/20 border border-amber-300/40 text-amber-200 text-xs font-bold px-3.5 py-1 rounded-full mb-4">
           ✉️ 來自「錢天堂」紅子老闆娘的特別邀請函
         </div>
-        <div class="text-4xl sm:text-5xl mb-3">🪙🎹🍬</div>
+
+        <!-- 自訂精緻向量插畫：平成十三年十円銅幣 + 淡綠色《音樂果》五線譜零食袋 + 漂浮金色音符 -->
+        <div class="flex justify-center mb-4">
+          <svg viewBox="0 0 360 155" class="w-full max-w-sm h-auto drop-shadow-lg animate-float" role="img" aria-label="平成十三年十元硬幣與莫札特風味音樂果零食袋插畫">
+            <defs>
+              <!-- 銅幣金屬光澤漸層 -->
+              <radialGradient id="coinBronze" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#fcd34d"/>
+                <stop offset="45%" stop-color="#d97706"/>
+                <stop offset="85%" stop-color="#92400e"/>
+                <stop offset="100%" stop-color="#78350f"/>
+              </radialGradient>
+              <radialGradient id="coinInner" cx="40%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#fbbf24"/>
+                <stop offset="70%" stop-color="#b45309"/>
+                <stop offset="100%" stop-color="#78350f"/>
+              </radialGradient>
+              <!-- 淡綠色音樂果零食袋漸層 -->
+              <linearGradient id="candyBagGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#bbf7d0"/>
+                <stop offset="50%" stop-color="#6ee7b7"/>
+                <stop offset="100%" stop-color="#10b981"/>
+              </linearGradient>
+              <!-- 背景魔法光暈 -->
+              <radialGradient id="magicAura" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(251, 191, 36, 0.32)"/>
+                <stop offset="100%" stop-color="rgba(251, 191, 36, 0)"/>
+              </radialGradient>
+            </defs>
+
+            <!-- 柔和魔法光暈 -->
+            <ellipse cx="180" cy="82" rx="145" ry="62" fill="url(#magicAura)"/>
+
+            <!-- 漂浮的金色音符與星芒 -->
+            <text x="48" y="42" fill="#fde047" font-size="20" font-weight="bold">♪</text>
+            <text x="158" y="26" fill="#fbbf24" font-size="22" font-weight="bold">♫</text>
+            <text x="295" y="44" fill="#fde047" font-size="20" font-weight="bold">♬</text>
+            <text x="315" y="96" fill="#fef08a" font-size="15">✦</text>
+            <text x="34" y="102" fill="#fef08a" font-size="14">✦</text>
+
+            <!-- 左側：閃耀的日本十円銅幣（平成十三年 十円） -->
+            <g transform="translate(115, 84)">
+              <!-- 陰影 -->
+              <ellipse cx="2" cy="46" rx="38" ry="8" fill="rgba(0,0,0,0.4)"/>
+              <!-- 外圈齒輪邊 -->
+              <circle cx="0" cy="0" r="44" fill="url(#coinBronze)" stroke="#fef08a" stroke-width="2"/>
+              <circle cx="0" cy="0" r="37" fill="url(#coinInner)" stroke="#fde68a" stroke-width="1.2" stroke-dasharray="3 2"/>
+              <!-- 幣面文字：平成十三年 / 十円 -->
+              <text x="0" y="-17" text-anchor="middle" fill="#fef3c7" font-size="8.5" font-weight="900" letter-spacing="0.5">平成十三年</text>
+              <text x="0" y="7" text-anchor="middle" fill="#fffbeb" font-size="20" font-weight="900" letter-spacing="1">十円</text>
+              <line x1="-18" y1="15" x2="18" y2="15" stroke="#fde68a" stroke-width="1.2"/>
+              <text x="0" y="26" text-anchor="middle" fill="#fef3c7" font-size="7.5" font-weight="700">幸運硬幣</text>
+              <!-- 左上角反光高光 -->
+              <path d="M-26 -22 Q-14 -34 2 -32" stroke="rgba(255,255,255,0.65)" stroke-width="3" stroke-linecap="round" fill="none"/>
+            </g>
+
+            <!-- 右側：淡綠色《音樂果》五線譜零食袋 -->
+            <g transform="translate(190, 26) rotate(5)">
+              <!-- 陰影 -->
+              <ellipse cx="46" cy="108" rx="44" ry="8" fill="rgba(0,0,0,0.42)"/>
+              <!-- 零食袋主體 -->
+              <rect x="0" y="0" width="92" height="102" rx="6" fill="url(#candyBagGreen)" stroke="#fef08a" stroke-width="2"/>
+              <!-- 上下封口鋸齒壓紋 -->
+              <line x1="2" y1="9" x2="90" y2="9" stroke="#047857" stroke-width="1.5" stroke-dasharray="3 2"/>
+              <line x1="2" y1="93" x2="90" y2="93" stroke="#047857" stroke-width="1.5" stroke-dasharray="3 2"/>
+              <!-- 中央奶油白標籤牌 -->
+              <rect x="10" y="18" width="72" height="66" rx="5" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+              <!-- 商品名稱：音樂果 -->
+              <text x="46" y="38" text-anchor="middle" fill="#3b1d5e" font-size="16" font-weight="900" letter-spacing="1">音樂果</text>
+              <!-- 莫札特風味小標籤 -->
+              <rect x="19" y="42" width="54" height="13" rx="6.5" fill="#f59e0b"/>
+              <text x="46" y="51.5" text-anchor="middle" fill="#2b1e16" font-size="8.5" font-weight="900">莫札特風味</text>
+              <!-- 五線譜與音符裝飾 -->
+              <line x1="15" y1="64" x2="77" y2="64" stroke="#9ca3af" stroke-width="0.9"/>
+              <line x1="15" y1="68" x2="77" y2="68" stroke="#9ca3af" stroke-width="0.9"/>
+              <line x1="15" y1="72" x2="77" y2="72" stroke="#9ca3af" stroke-width="0.9"/>
+              <line x1="15" y1="76" x2="77" y2="76" stroke="#9ca3af" stroke-width="0.9"/>
+              <text x="24" y="75" fill="#7c3aed" font-size="13" font-weight="bold">𝄞</text>
+              <text x="44" y="74" fill="#d97706" font-size="12" font-weight="bold">♪</text>
+              <text x="61" y="73" fill="#059669" font-size="12" font-weight="bold">♫</text>
+            </g>
+          </svg>
+        </div>
+
         <h2 class="text-xl sm:text-2xl font-black text-amber-300 mb-3">
           你手上握有一枚「平成十三年的十元硬幣」嗎？
         </h2>
@@ -356,21 +446,21 @@
         </p>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left max-w-2xl mx-auto mb-6">
-          <div class="bg-white/10 border border-amber-400/30 rounded-xl p-3">
+          <div class="bg-white/10 border border-amber-400/35 rounded-xl p-3.5">
             <div class="text-amber-300 font-black text-sm mb-1">📖 1. 3D 翻頁讀原著</div>
-            <p class="text-xs text-amber-100/85">內建 34 頁原著掃描閱讀器，支援點擊、滑動與全螢幕放大閱讀。</p>
+            <p class="text-xs text-amber-100/85 leading-relaxed">內建 34 頁原著掃描閱讀器，支援點擊、滑動與全螢幕放大閱讀。</p>
           </div>
-          <div class="bg-white/10 border border-amber-400/30 rounded-xl p-3">
+          <div class="bg-white/10 border border-amber-400/35 rounded-xl p-3.5">
             <div class="text-amber-300 font-black text-sm mb-1">🎭 2. 三幕角色抉擇</div>
-            <p class="text-xs text-amber-100/85">小組討論「如果我是立花響」，體驗不同抉擇帶來的故事發展。</p>
+            <p class="text-xs text-amber-100/85 leading-relaxed">小組討論「如果我是立花響」，體驗不同抉擇帶來的故事發展。</p>
           </div>
-          <div class="bg-white/10 border border-amber-400/30 rounded-xl p-3">
-            <div class="text-amber-300 font-black text-sm mb-1">🃏 3. 收集專屬圖卡</div>
-            <p class="text-xs text-amber-100/85">完成商品說明書與心情溫度計挑戰，翻開三張精美插畫特質卡！</p>
+          <div class="bg-white/10 border border-amber-400/35 rounded-xl p-3.5">
+            <div class="text-amber-300 font-black text-sm mb-1">🏆 3. 收集專屬圖卡</div>
+            <p class="text-xs text-amber-100/85 leading-relaxed">完成商品說明書與心情溫度計挑戰，翻開三張精美插畫特質卡！</p>
           </div>
         </div>
 
-        <button onclick="startTheater()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#2e1065] font-black text-base sm:text-lg rounded-2xl shadow-lg transform hover:scale-[1.02] transition">
+        <button onclick="startTheater()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#3b1d5e] font-black text-base sm:text-lg rounded-2xl shadow-lg transform hover:scale-[1.02] transition">
           🍬 推開錢天堂大門：開始互動劇場 ➡️
         </button>
       </div>
@@ -382,26 +472,26 @@
     <main id="main-dashboard" class="hidden">
       
       <!-- 頂部 7 個分頁按鈕 -->
-      <nav class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5 mb-6 border-b-2 border-[#b48a3e] pb-2.5">
-        <button id="nav-btn-1" onclick="switchTab(1)" class="tab-btn unlocked active py-2 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
+      <nav class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5 mb-6 border-b-2 border-[#d97706] pb-2.5">
+        <button id="nav-btn-1" onclick="switchTab(1)" class="tab-btn unlocked active py-2.5 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
           🎭 第一幕：神秘小巷<br><span class="text-[10px] font-normal opacity-90">(p.114-123)</span>
         </button>
-        <button id="nav-btn-2" onclick="switchTab(2)" class="tab-btn locked py-2 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
+        <button id="nav-btn-2" onclick="switchTab(2)" class="tab-btn locked py-2.5 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
           🔒 第二幕：神童光環<br><span class="text-[10px] font-normal opacity-90">(p.123-129)</span>
         </button>
-        <button id="nav-btn-3" onclick="switchTab(3)" class="tab-btn locked py-2 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
-          🔒 第三幕：休息室抉擇<br><span class="text-[10px] font-normal opacity-90">(p.129-140)</span>
+        <button id="nav-btn-3" onclick="switchTab(3)" class="tab-btn locked py-2.5 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
+          🔒 第三幕：大賽危機<br><span class="text-[10px] font-normal opacity-90">(p.129-140)</span>
         </button>
-        <button id="nav-btn-4" onclick="switchTab(4)" class="tab-btn locked py-2 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
-          🔒 故事結局<br><span class="text-[10px] font-normal opacity-90">(p.140-144)</span>
+        <button id="nav-btn-4" onclick="switchTab(4)" class="tab-btn locked py-2.5 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
+          🔒 故事結局：重來一次<br><span class="text-[10px] font-normal opacity-90">(p.140-144)</span>
         </button>
-        <button id="nav-btn-5" onclick="switchTab(5)" class="tab-btn locked py-2 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
+        <button id="nav-btn-5" onclick="switchTab(5)" class="tab-btn locked py-2.5 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
           🔒 延伸一<br><span class="text-[10px] font-normal opacity-90">商品說明書</span>
         </button>
-        <button id="nav-btn-6" onclick="switchTab(6)" class="tab-btn locked py-2 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
+        <button id="nav-btn-6" onclick="switchTab(6)" class="tab-btn locked py-2.5 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
           🔒 延伸二<br><span class="text-[10px] font-normal opacity-90">心情溫度計</span>
         </button>
-        <button id="nav-btn-7" onclick="switchTab(7)" class="col-span-2 sm:col-span-2 lg:col-span-1 tab-btn locked py-2 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
+        <button id="nav-btn-7" onclick="switchTab(7)" class="col-span-2 sm:col-span-2 lg:col-span-1 tab-btn locked py-2.5 px-1.5 rounded-xl font-bold text-xs border border-[#c8b99c] text-center leading-snug">
           🔒 大結局<br><span class="text-[10px] font-normal opacity-90">3D 閱讀特質卡</span>
         </button>
       </nav>
@@ -411,7 +501,7 @@
            ========================================== -->
       <div id="tab-1" class="tab-content animate-fade-in">
         <div class="flex items-center justify-between mb-3">
-          <span class="bg-purple-900 text-amber-200 text-xs font-bold px-3 py-1 rounded-full">第一幕：面對神奇零食與警告</span>
+          <span class="bg-[#3b1d5e] text-amber-200 text-xs font-bold px-3 py-1 rounded-full">第一幕：面對神奇零食與警告</span>
           <span class="text-xs text-gray-500 font-bold">進度 1 / 7</span>
         </div>
 
@@ -419,7 +509,7 @@
         <div id="flipbook-container-1" class="mb-5"></div>
 
         <!-- 場景插畫 SVG -->
-        <div class="bg-[#241b35] rounded-2xl p-4 mb-5 border-2 border-[#b48a3e] flex flex-col items-center text-white">
+        <div class="bg-[#241b35] rounded-2xl p-4 mb-5 border-2 border-[#d97706] flex flex-col items-center text-white">
           <svg viewBox="0 0 360 150" class="w-full max-w-md h-auto">
             <rect x="0" y="0" width="360" height="150" rx="10" fill="#1e1633"/>
             <circle cx="180" cy="40" r="85" fill="rgba(253, 230, 138, 0.08)"/>
@@ -465,11 +555,11 @@
             </g>
           </svg>
           <p class="text-xs text-amber-200/90 mt-2 text-center">
-            🖼️ 昏暗小巷深處，紅子老闆娘將《音樂果》遞給立花響，並警告：「千萬不要得意忘形。」
+            🎵 昏暗小巷深處，紅子老闆娘將《音樂果》遞給立花響，並警告：「千萬不要得意忘形。」
           </p>
         </div>
 
-        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-3">
+        <h3 class="text-lg sm:text-xl font-black text-[#3b1d5e] mb-3">
           🤔 【如果我是立花響】面對紅子的警告與《音樂果》，我會怎麼做？
         </h3>
 
@@ -491,9 +581,9 @@
           </button>
         </div>
 
-        <div id="act1-feedback" class="hidden bg-white border-2 border-[#b48a3e] rounded-2xl p-5 mb-4 animate-fade-in"></div>
+        <div id="act1-feedback" class="hidden bg-white border-2 border-[#d97706] rounded-2xl p-5 mb-4 animate-fade-in"></div>
 
-        <button id="act1-next-btn" onclick="unlockAndGo(2)" class="hidden w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+        <button id="act1-next-btn" onclick="unlockAndGo(2)" class="hidden w-full py-3.5 bg-gradient-to-r from-[#3b1d5e] to-[#261140] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
           🎬 繼續劇情：前往【第二幕：神童光環 (p.123-129)】➡️
         </button>
       </div>
@@ -503,7 +593,7 @@
            ========================================== -->
       <div id="tab-2" class="tab-content hidden animate-fade-in">
         <div class="flex items-center justify-between mb-3">
-          <span class="bg-purple-900 text-amber-200 text-xs font-bold px-3 py-1 rounded-full">第二幕：成名後的態度考驗</span>
+          <span class="bg-[#3b1d5e] text-amber-200 text-xs font-bold px-3 py-1 rounded-full">第二幕：成名後的態度考驗</span>
           <span class="text-xs text-gray-500 font-bold">進度 2 / 7</span>
         </div>
 
@@ -511,7 +601,7 @@
         <div id="flipbook-container-2" class="mb-5"></div>
 
         <!-- 場景插畫 SVG -->
-        <div class="bg-[#241b35] rounded-2xl p-4 mb-5 border-2 border-[#b48a3e] flex flex-col sm:flex-row items-center gap-4 text-white">
+        <div class="bg-[#241b35] rounded-2xl p-4 mb-5 border-2 border-[#d97706] flex flex-col sm:flex-row items-center gap-4 text-white">
           <svg viewBox="0 0 180 130" class="w-40 h-28 shrink-0">
             <polygon points="90,10 30,115 150,115" fill="rgba(253, 224, 71, 0.18)"/>
             <path d="M68 40 H112 L105 72 C102 82, 78 82, 75 72 Z" fill="#fbbf24" stroke="#fef08a" stroke-width="2"/>
@@ -527,7 +617,7 @@
           </div>
         </div>
 
-        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-3">
+        <h3 class="text-lg sm:text-xl font-black text-[#3b1d5e] mb-3">
           🤔 【如果我是立花響】距離比賽還有一星期，我會怎麼準備？
         </h3>
 
@@ -549,15 +639,15 @@
           </button>
         </div>
 
-        <div id="act2-feedback" class="hidden bg-white border-2 border-[#b48a3e] rounded-2xl p-5 mb-4 animate-fade-in"></div>
+        <div id="act2-feedback" class="hidden bg-white border-2 border-[#d97706] rounded-2xl p-5 mb-4 animate-fade-in"></div>
 
-        <button id="act2-next-btn" onclick="unlockAndGo(3)" class="hidden w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
-          🎬 繼續劇情：前往【第三幕：休息室抉擇 (p.129-140)】➡️
+        <button id="act2-next-btn" onclick="unlockAndGo(3)" class="hidden w-full py-3.5 bg-gradient-to-r from-[#3b1d5e] to-[#261140] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+          🎬 繼續劇情：前往【第三幕：大賽危機 (p.129-140)】➡️
         </button>
       </div>
 
       <!-- ==========================================
-           分頁 3：第三幕：休息室抉擇 (p.129-140)
+           分頁 3：第三幕：大賽危機 (p.129-140)
            ========================================== -->
       <div id="tab-3" class="tab-content hidden animate-fade-in">
         <div class="flex items-center justify-between mb-3">
@@ -569,7 +659,7 @@
         <div id="flipbook-container-3" class="mb-5"></div>
 
         <!-- 場景插畫 SVG -->
-        <div class="bg-[#241b35] rounded-2xl p-4 mb-5 border-2 border-[#b48a3e] flex flex-col sm:flex-row items-center gap-4 text-white">
+        <div class="bg-[#241b35] rounded-2xl p-4 mb-5 border-2 border-[#d97706] flex flex-col sm:flex-row items-center gap-4 text-white">
           <svg viewBox="0 0 180 130" class="w-40 h-28 shrink-0">
             <rect x="45" y="15" width="90" height="100" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
             <rect x="55" y="28" width="70" height="22" rx="4" fill="#b45309"/>
@@ -583,7 +673,7 @@
           </div>
         </div>
 
-        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-3">
+        <h3 class="text-lg sm:text-xl font-black text-[#3b1d5e] mb-3">
           🤔 【終極抉擇】面對眼前這包免費的「舒曼風味音樂果」，我會怎麼選？
         </h3>
 
@@ -605,15 +695,15 @@
           </button>
         </div>
 
-        <div id="act3-feedback" class="hidden bg-white border-2 border-[#b48a3e] rounded-2xl p-5 mb-4 animate-fade-in"></div>
+        <div id="act3-feedback" class="hidden bg-white border-2 border-[#d97706] rounded-2xl p-5 mb-4 animate-fade-in"></div>
 
-        <button id="act3-next-btn" onclick="unlockAndGo(4)" class="hidden w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
-          📖 翻開最後幾頁！前往【故事結局 (p.140-144)】➡️
+        <button id="act3-next-btn" onclick="unlockAndGo(4)" class="hidden w-full py-3.5 bg-gradient-to-r from-[#3b1d5e] to-[#261140] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+          📖 翻開最後幾頁！前往【故事結局：重來一次 (p.140-144)】➡️
         </button>
       </div>
 
       <!-- ==========================================
-           分頁 4：故事結局 (p.140-144)
+           分頁 4：故事結局：重來一次 (p.140-144)
            ========================================== -->
       <div id="tab-4" class="tab-content hidden animate-fade-in">
         <div class="flex items-center justify-between mb-3">
@@ -625,16 +715,16 @@
         <div id="flipbook-container-4" class="mb-5"></div>
 
         <!-- 結局思辨小站 -->
-        <div class="bg-amber-50/90 border-2 border-[#b48a3e] rounded-2xl p-5 mb-5">
-          <h3 class="text-lg font-black text-[#3b0764] mb-2">
+        <div class="bg-amber-50/90 border-2 border-[#d97706] rounded-2xl p-5 mb-5">
+          <h3 class="text-lg font-black text-[#3b1d5e] mb-2">
             💭 【結局思辨小站】讀完第 140–144 頁後，想一想：
           </h3>
           <p class="text-sm text-gray-700 mb-3">
-            嚼完淡藍色包裝紙的<strong>《消消口香糖》</strong>回到小巷後，立花響已經完全忘記剛剛在比賽舞台上的恐怖經歷了，但為什麼他卻覺得<strong>「今天不像平時那麼討厭上鋼琴課」</strong>呢？
+            嚼完淡藍色紙包裝的<strong>《消消口香糖》</strong>回到小巷後，立花響已經完全忘記剛剛在比賽舞台上的恐怖經歷了，但為什麼他卻覺得<strong>「今天不像平時那麼討厭上鋼琴課」</strong>呢？
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button id="ending-opt-a" onclick="chooseEndingReflection('A')" class="choice-card p-3.5 rounded-xl text-left">
-              <span class="inline-block bg-purple-100 text-purple-900 font-bold px-2 py-0.5 rounded text-xs mb-1">想法 A</span>
+              <span class="inline-block bg-purple-100 text-[#3b1d5e] font-bold px-2 py-0.5 rounded text-xs mb-1">想法 A</span>
               <p class="font-bold text-sm text-gray-900">心靈留下了「想走捷徑反而會出糗」的深刻感受</p>
               <p class="text-xs text-gray-600 mt-0.5">雖然記憶消除了，但心底明白：面對嚴格老師乖乖練琴，其實一點也不可怕！</p>
             </button>
@@ -647,7 +737,7 @@
           <div id="ending-feedback" class="hidden mt-4 p-3.5 bg-white rounded-xl border border-purple-300 text-sm text-gray-800 leading-relaxed animate-fade-in"></div>
         </div>
 
-        <button id="ending-next-btn" onclick="unlockAndGo(5)" class="w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+        <button id="ending-next-btn" onclick="unlockAndGo(5)" class="w-full py-3.5 bg-gradient-to-r from-[#3b1d5e] to-[#261140] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
           📦 進入延伸挑戰：【延伸一：商品說明書】➡️
         </button>
       </div>
@@ -661,7 +751,7 @@
           <span class="text-xs text-gray-500 font-bold">進度 5 / 7</span>
         </div>
 
-        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-1">
+        <h3 class="text-lg sm:text-xl font-black text-[#3b1d5e] mb-1">
           📋 錢天堂商品檔案庫：規格配對挑戰
         </h3>
         <p class="text-sm text-gray-600 mb-5">
@@ -672,12 +762,12 @@
           <!-- 題目 1 -->
           <div class="bg-amber-50/80 border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="font-bold text-gray-800">
-              <span class="text-purple-900">1. 購買音樂果的幸運硬幣：</span>
+              <span class="text-[#3b1d5e]">1. 購買《莫札特風味音樂果》的價格：</span>
             </div>
-            <select id="spec-1" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-purple-700">
-              <option value="">🪙 請選擇正確說明...</option>
+            <select id="spec-1" class="p-3 border-2 border-[#d97706] rounded-xl bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-[#3b1d5e]">
+              <option value="">✨ 請選擇正確說明...</option>
               <option value="wrong1">昭和五十年的五元硬幣</option>
-              <option value="correct">平成十三年的十元硬幣</option>
+              <option value="correct">平成十三年十元硬幣</option>
               <option value="wrong2">令和元年的五十元硬幣</option>
             </select>
           </div>
@@ -685,24 +775,24 @@
           <!-- 題目 2 -->
           <div class="bg-amber-50/80 border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="font-bold text-gray-800">
-              <span class="text-purple-900">2. 音樂果餅乾的造型：</span>
+              <span class="text-[#3b1d5e]">2. 《音樂果》餅乾的造型：</span>
             </div>
-            <select id="spec-2" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-purple-700">
+            <select id="spec-2" class="p-3 border-2 border-[#d97706] rounded-xl bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-[#3b1d5e]">
               <option value="">🎼 請選擇正確說明...</option>
               <option value="wrong1">迷你鋼琴與小提琴造型</option>
               <option value="wrong2">五線譜與作曲家頭像造型</option>
-              <option value="correct">高音譜記號、八分音符等音樂記號</option>
+              <option value="correct">高音譜記號與八分音符等</option>
             </select>
           </div>
 
           <!-- 題目 3 -->
           <div class="bg-amber-50/80 border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="font-bold text-gray-800">
-              <span class="text-purple-900">3. 音樂果包裝背面的隱藏限制：</span>
+              <span class="text-[#3b1d5e]">3. 《音樂果》包裝背面的隱藏規則：</span>
             </div>
-            <select id="spec-3" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-purple-700">
+            <select id="spec-3" class="p-3 border-2 border-[#d97706] rounded-xl bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-[#3b1d5e]">
               <option value="">📋 請選擇正確說明...</option>
-              <option value="correct">每袋只有一位作曲家的口味，無法演奏其他作曲家的樂曲</option>
+              <option value="correct">每袋只有一位作曲家口味，無法演奏其他作曲家樂曲</option>
               <option value="wrong1">吃完後只能維持十分鐘，時間到就會立刻失效</option>
               <option value="wrong2">必須搭配白開水吞服，否則會肚子痛</option>
             </select>
@@ -711,12 +801,12 @@
           <!-- 題目 4 -->
           <div class="bg-amber-50/80 border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="font-bold text-gray-800">
-              <span class="text-purple-900">4. 紅子老闆娘出售時的口頭警告：</span>
+              <span class="text-[#3b1d5e]">4. 紅子老闆娘出售時的口頭警告：</span>
             </div>
-            <select id="spec-4" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-purple-700">
+            <select id="spec-4" class="p-3 border-2 border-[#d97706] rounded-xl bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-[#3b1d5e]">
               <option value="">⚠️ 請選擇正確說明...</option>
               <option value="wrong1">每天只能吃一顆，絕對不可以一次吃光</option>
-              <option value="correct">可以充分享受音樂，但千萬不要得意忘形</option>
+              <option value="correct">千萬不要得意忘形</option>
               <option value="wrong2">千萬不可以讓老師和媽媽發現這包零食</option>
             </select>
           </div>
@@ -724,19 +814,19 @@
           <!-- 題目 5 -->
           <div class="bg-blue-50/80 border-2 border-blue-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="font-bold text-gray-800">
-              <span class="text-blue-900">5. 消消口香糖的外觀與功用：</span>
+              <span class="text-blue-900">5. 《消消口香糖》的外觀與功用：</span>
             </div>
-            <select id="spec-5" class="p-2.5 border-2 border-blue-400 rounded-lg bg-white font-bold text-sm text-blue-900 sm:w-80 focus:outline-none focus:border-purple-700">
-              <option value="">🫧 請選擇正確說明...</option>
-              <option value="wrong1">粉紅色包裝紙，能讓人瞬間學會所有樂器</option>
-              <option value="correct">淡藍色包裝紙，能消除之前的時間和曾經發生的事</option>
-              <option value="wrong2">金黃色包裝紙，能讓嚴格的老師變得超溫柔</option>
+            <select id="spec-5" class="p-3 border-2 border-blue-400 rounded-xl bg-white font-bold text-sm text-blue-900 sm:w-80 focus:outline-none focus:border-[#3b1d5e]">
+              <option value="">🍬 請選擇正確說明...</option>
+              <option value="wrong1">粉紅色紙包裝，能讓人瞬間學會所有樂器</option>
+              <option value="correct">淡藍色紙包裝的薄荷口香糖，能消除之前的時間和曾經發生的事</option>
+              <option value="wrong2">金黃色紙包裝，能讓嚴格的老師變得超溫柔</option>
             </select>
           </div>
         </div>
 
-        <button onclick="verifyExtension1()" class="w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
-          ✔️ 驗證商品說明書，解鎖【延伸二：心情溫度計】➡️
+        <button onclick="verifyExtension1()" class="w-full py-3.5 bg-gradient-to-r from-[#3b1d5e] to-[#261140] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+          ✅ 驗證商品說明書，解鎖【延伸二：心情溫度計】➡️
         </button>
       </div>
 
@@ -749,7 +839,7 @@
           <span class="text-xs text-gray-500 font-bold">進度 6 / 7</span>
         </div>
 
-        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-1">
+        <h3 class="text-lg sm:text-xl font-black text-[#3b1d5e] mb-1">
           🌡️ 立花響的「心情變化溫度計」
         </h3>
         <p class="text-sm text-gray-600 mb-5">
@@ -760,10 +850,10 @@
           <!-- 階段 1 -->
           <div class="bg-white border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
             <div>
-              <span class="text-xs font-bold text-purple-700 block">階段 1（故事開頭）</span>
-              <span class="font-bold text-gray-900 text-base">🚶 走去鋼琴教室的路上</span>
+              <span class="text-xs font-bold text-[#3b1d5e] block">階段 1（故事開頭）</span>
+              <span class="font-bold text-gray-900 text-base">🚶 走去鋼琴教室路上</span>
             </div>
-            <select id="mood-1" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-purple-700">
+            <select id="mood-1" class="p-3 border-2 border-[#d97706] rounded-xl bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-[#3b1d5e]">
               <option value="">🌡️ 選擇當時的心情與原因...</option>
               <option value="correct">😫 害怕逃避（覺得佐佐木老師很嚴格，不想上鋼琴課）</option>
               <option value="wrong1">😎 驕傲自滿（被捧為天才神童，不再練琴也不看樂譜）</option>
@@ -774,10 +864,10 @@
           <!-- 階段 2 -->
           <div class="bg-white border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
             <div>
-              <span class="text-xs font-bold text-purple-700 block">階段 2（吃完音樂果後）</span>
-              <span class="font-bold text-gray-900 text-base">🏆 課堂上完美彈奏並成名後</span>
+              <span class="text-xs font-bold text-[#3b1d5e] block">階段 2（吃完音樂果後）</span>
+              <span class="font-bold text-gray-900 text-base">🏆 課堂上大獲好評後</span>
             </div>
-            <select id="mood-2" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-purple-700">
+            <select id="mood-2" class="p-3 border-2 border-[#d97706] rounded-xl bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-[#3b1d5e]">
               <option value="">🌡️ 選擇當時的心情與原因...</option>
               <option value="wrong1">😊 輕鬆勇敢（忘記可怕經歷，不再那麼討厭上鋼琴課）</option>
               <option value="correct">😎 驕傲自滿（被捧為天才神童，不再練琴也不看樂譜）</option>
@@ -788,10 +878,10 @@
           <!-- 階段 3 -->
           <div class="bg-white border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
             <div>
-              <span class="text-xs font-bold text-purple-700 block">階段 3（鋼琴比賽當天）</span>
-              <span class="font-bold text-gray-900 text-base">🎹 比賽台上雙手一動也不動時</span>
+              <span class="text-xs font-bold text-[#3b1d5e] block">階段 3（鋼琴比賽當天）</span>
+              <span class="font-bold text-gray-900 text-base">🎹 比賽台上雙手不動時</span>
             </div>
-            <select id="mood-3" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-purple-700">
+            <select id="mood-3" class="p-3 border-2 border-[#d97706] rounded-xl bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-[#3b1d5e]">
               <option value="">🌡️ 選擇當時的心情與原因...</option>
               <option value="wrong1">😎 驕傲自滿（被捧為天才神童，不再練琴也不看樂譜）</option>
               <option value="wrong2">😊 輕鬆勇敢（忘記可怕經歷，不再那麼討厭上鋼琴課）</option>
@@ -802,10 +892,10 @@
           <!-- 階段 4 -->
           <div class="bg-white border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
             <div>
-              <span class="text-xs font-bold text-purple-700 block">階段 4（故事結尾）</span>
-              <span class="font-bold text-gray-900 text-base">🫧 嚼完消消口香糖回到小巷後</span>
+              <span class="text-xs font-bold text-[#3b1d5e] block">階段 4（故事結尾）</span>
+              <span class="font-bold text-gray-900 text-base">🍬 嚼完消消口香糖回到小巷後</span>
             </div>
-            <select id="mood-4" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-purple-700">
+            <select id="mood-4" class="p-3 border-2 border-[#d97706] rounded-xl bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-[#3b1d5e]">
               <option value="">🌡️ 選擇當時的心情與原因...</option>
               <option value="correct">😊 輕鬆勇敢（忘記可怕經歷，不再那麼討厭上鋼琴課）</option>
               <option value="wrong1">😎 驕傲自滿（被捧為天才神童，不再練琴也不看樂譜）</option>
@@ -832,7 +922,7 @@
           <div class="inline-block bg-amber-100 text-amber-900 border border-amber-400 px-4 py-1 rounded-full text-xs font-black mb-2">
             🎉 恭喜全組完成《音樂果》互動劇場與延伸挑戰！
           </div>
-          <h2 class="text-2xl sm:text-3xl font-black text-[#3b0764]">
+          <h2 class="text-2xl sm:text-3xl font-black text-[#3b1d5e]">
             🏅 錢天堂專屬閱讀特質圖卡
           </h2>
           <p class="text-sm text-gray-600 mt-1">
@@ -841,14 +931,14 @@
 
           <!-- 一鍵翻開全部圖卡控制鈕 -->
           <div class="mt-4 flex justify-center">
-            <button id="flip-all-btn" onclick="flipAllCards()" class="px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#2e1065] font-black text-sm rounded-xl shadow-md border border-[#78350f] transition flex items-center gap-2">
+            <button id="flip-all-btn" onclick="flipAllCards()" class="px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#3b1d5e] font-black text-sm rounded-xl shadow-md border border-[#78350f] transition flex items-center gap-2">
               <span>✨ 一鍵翻開全部圖卡</span>
             </button>
           </div>
         </div>
 
         <!-- 首席智慧小店長特別榮譽橫幅 -->
-        <div id="master-badge-banner" class="hidden bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-[#2e1065] rounded-2xl p-4 mb-6 text-center shadow-lg border-2 border-[#78350f]">
+        <div id="master-badge-banner" class="hidden bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-[#3b1d5e] rounded-2xl p-4 mb-6 text-center shadow-lg border-2 border-[#78350f]">
           <div class="text-xl sm:text-2xl font-black mb-1">👑 特別榮譽：錢天堂「首席智慧小店長」👑</div>
           <p class="text-xs sm:text-sm font-bold">
             太厲害了！你們在每一幕都做出了最謹慎誠實的選擇，而且延伸關卡全部一次通關！
@@ -861,10 +951,10 @@
         </div>
 
         <div class="flex flex-col sm:flex-row gap-3">
-          <button onclick="switchTab(4)" class="flex-1 py-3 bg-[#f3ead3] hover:bg-[#e6d6b3] text-[#5c3a18] font-bold rounded-xl border border-[#b48a3e] transition">
+          <button onclick="switchTab(4)" class="flex-1 py-3 bg-[#f3ead3] hover:bg-[#e6d6b3] text-[#5c3a18] font-bold rounded-xl border border-[#d97706] transition">
             📖 重溫故事結局 (p.140-144)
           </button>
-          <button onclick="goHome()" class="flex-1 py-3 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow hover:opacity-95 transition">
+          <button onclick="goHome()" class="flex-1 py-3 bg-gradient-to-r from-[#3b1d5e] to-[#261140] text-amber-200 font-bold rounded-xl shadow hover:opacity-95 transition">
             🏠 回到活動首頁
           </button>
         </div>
@@ -878,7 +968,7 @@
        JavaScript 互動邏輯 + 3D 翻頁書 + 3D 圖卡引擎
        ========================================== -->
   <script>
-    // 教師快捷控制驗證碼（僅內部比對，不顯示於介面）
+    // 教師快捷控制驗證碼（僅內部比對，絕不顯示於介面）
     const TEACHER_PIN = "221b";
 
     // 七大分頁解鎖狀態
@@ -990,9 +1080,9 @@
       }
     }
 
-    // 使用 data-ext-idx 自動依序嘗試 .png、.jpg、.jpeg 三種副檔名；失敗則顯示故事文字摘要卡片
+    // 自動依序嘗試 .png -> .jpg -> .jpeg -> .PNG -> .JPG；失敗則顯示故事文字摘要卡片
     function handleBookImgError(imgEl, baseName, fallbackText) {
-      const extensions = [".png", ".jpg", ".jpeg"];
+      const extensions = [".png", ".jpg", ".jpeg", ".PNG", ".JPG"];
       const nextIdx = parseInt(imgEl.dataset.extIdx || "0", 10) + 1;
 
       if (nextIdx < extensions.length) {
@@ -1008,7 +1098,7 @@
         .join("");
 
       const fallbackBox = document.createElement("div");
-      fallbackBox.className = "w-full max-w-xl mx-auto p-6 sm:p-8 bg-[#fdfbf5] border-2 border-dashed border-[#b48a3e] rounded-xl text-left text-gray-800 leading-relaxed shadow-inner";
+      fallbackBox.className = "w-full max-w-xl mx-auto p-6 sm:p-8 bg-[#fdf8ee] border-2 border-dashed border-[#d97706] rounded-xl text-left text-gray-800 leading-relaxed shadow-inner";
       fallbackBox.innerHTML = `
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#d6c7a9] pb-2 mb-3">
           <span class="text-xs font-black text-[#78350f] bg-amber-100 px-2.5 py-1 rounded">📖 原書文字摘要卡片（圖檔：${baseName}）</span>
@@ -1078,7 +1168,7 @@
               <h4 class="font-black text-amber-300 text-sm sm:text-base">${section.title}</h4>
               <p class="text-xs text-amber-100/80">${section.pageRangeLabel} • 目前檢視：<strong>${item.label}</strong> (${idx + 1} / ${total})</p>
             </div>
-            <button onclick="openZoomModal(${bookId})" class="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-[#2e1065] font-black rounded-xl text-xs sm:text-sm shadow transition flex items-center gap-1">
+            <button onclick="openZoomModal(${bookId})" class="px-3.5 py-2 bg-amber-400 hover:bg-amber-300 text-[#3b1d5e] font-black rounded-xl text-xs sm:text-sm shadow transition flex items-center gap-1.5">
               <span>🔍 放大閱讀</span>
             </button>
           </div>
@@ -1107,19 +1197,19 @@
 
           <!-- 底部翻頁按鈕與頁碼下拉快速跳頁選單 -->
           <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <button onclick="flipBookPage(${bookId}, -1)" ${idx === 0 ? "disabled" : ""} class="px-3.5 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition ${idx === 0 ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-amber-100 hover:bg-amber-200 text-[#4a2c18]"}">
+            <button onclick="flipBookPage(${bookId}, -1)" ${idx === 0 ? "disabled" : ""} class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm transition ${idx === 0 ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-amber-100 hover:bg-amber-200 text-[#4a2c18]"}">
               ◀ 上一頁
             </button>
 
             <div class="flex items-center gap-1.5">
               <label for="page-select-${bookId}" class="text-xs text-amber-200 font-bold hidden sm:inline">快速跳頁：</label>
               <select id="page-select-${bookId}" onchange="jumpBookPage(${bookId}, parseInt(this.value, 10))"
-                class="px-2.5 py-1.5 rounded-lg bg-[#fdfbf5] text-[#4a2c18] font-bold text-xs sm:text-sm border border-amber-400 focus:outline-none">
+                class="px-3 py-2 rounded-xl bg-[#fdf8ee] text-[#4a2c18] font-bold text-xs sm:text-sm border border-amber-400 focus:outline-none">
                 ${dropdownOptions}
               </select>
             </div>
 
-            <button onclick="flipBookPage(${bookId}, 1)" ${idx === total - 1 ? "disabled" : ""} class="px-3.5 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition ${idx === total - 1 ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-amber-100 hover:bg-amber-200 text-[#4a2c18]"}">
+            <button onclick="flipBookPage(${bookId}, 1)" ${idx === total - 1 ? "disabled" : ""} class="px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm transition ${idx === total - 1 ? "bg-white/10 text-white/40 cursor-not-allowed" : "bg-amber-100 hover:bg-amber-200 text-[#4a2c18]"}">
               下一頁 ▶
             </button>
           </div>
@@ -1295,9 +1385,9 @@
     }
 
     function executeTeacherJump(targetTab) {
-      const pin = document.getElementById('teacher-pin-input').value.trim();
+      const pin = document.getElementById('teacher-pin-input').value.trim().toLowerCase();
       if (pin !== TEACHER_PIN) {
-        showModal("❌", "授權碼驗證未通過", "輸入的教師授權碼不正確，請重新確認后再試一次。");
+        showModal("❌", "授權碼驗證未通過", "輸入的教師授權碼不正確，請重新確認後再試一次。");
         return;
       }
 
@@ -1475,7 +1565,7 @@
               <h4 class="font-black text-amber-900 text-base mb-1">紅子老闆娘的互動反問：「如果下次遇到貝多芬或蕭邦怎麼辦？」</h4>
               <p class="text-sm text-gray-700 leading-relaxed">
                 「哎呀，吃下這包舒曼音樂果確實能幫你度過眼前的難關。可是你想想看：<strong>如果下次比賽遇到貝多芬、巴赫或蕭邦的曲子怎麼辦？</strong>難道你要一輩子靠吃零食才能彈鋼琴，永遠不敢用自己的雙手練習嗎？」<br>
-                <span class="text-purple-900 font-bold mt-2 block">💡 請全組重新思考紅子老闆娘的問題，點擊上方的「選項 B：低頭拒絕」看看會發生什麼奇蹟！</span>
+                <span class="text-[#3b1d5e] font-bold mt-2 block">💡 請全組重新思考紅子老闆娘的問題，點擊上方的「選項 B：低頭拒絕」看看會發生什麼奇蹟！</span>
               </p>
             </div>
           </div>
@@ -1484,7 +1574,7 @@
         optB.classList.add('selected-b');
         feedback.innerHTML = `
           <div class="flex items-start gap-3">
-            <span class="text-2xl">🛡️</span>
+            <span class="text-2xl">🏆</span>
             <div>
               <h4 class="font-black text-emerald-900 text-base mb-1">誠實勇氣滿分！響低頭拒絕了舒曼音樂果</h4>
               <p class="text-sm text-gray-700 leading-relaxed">
@@ -1512,7 +1602,7 @@
       if (option === 'A') {
         optA.classList.add('selected-a');
         feedback.innerHTML = `
-          <span class="font-black text-purple-900">💡 很棒的觀察！</span> 消消口香糖雖然清除了記憶，但心靈深處已經感受過「想靠作弊反而陷入絕境」的不安。比起當眾出糗，回到鋼琴教室乖乖練琴反而讓人覺得踏實又安心！
+          <span class="font-black text-[#3b1d5e]">💡 很棒的觀察！</span> 消消口香糖雖然清除了記憶，但心靈深處已經感受過「想靠作弊反而陷入絕境」的不安。比起當眾出糗，回到鋼琴教室乖乖練琴反而讓人覺得踏實又安心！
         `;
       } else {
         optB.classList.add('selected-b');
@@ -1545,7 +1635,7 @@
         showModal("🎉", "商品說明書核對完全正確！", "你們把錢天堂零食的硬幣價格、餅乾造型、背面限制與口頭警告都查得一清二楚！\n\n🔓 已解鎖【延伸二：心情溫度計】！");
         unlockAndGo(6);
       } else {
-        showModal("🔍", "說明書細節有誤喔！", "有幾項配對選錯了，請再回想一下故事內容（或點擊右上角「故事重點參考」），重新檢查下拉選單吧！");
+        showModal("🔍", "說明書細節有誤喔！", "有幾項配對選錯了，請再回想一下故事內容（或點擊右上角「故事全文參考」），重新檢查下拉選單吧！");
       }
     }
 
@@ -1595,12 +1685,35 @@
         index: 0,
         title: "誠實勇氣卡",
         subtitle: "HONESTY & COURAGE",
-        badgeIcon: "🛡️",
+        badgeIcon: "🏆",
         medalName: "誠實消消糖勳章",
-        frontBg: "from-[#4c1d95] via-[#3b0764] to-[#1e1b4b]",
+        frontBg: "from-[#4c1d95] via-[#3b1d5e] to-[#1e1b4b]",
         frontSummary: "拒絕作弊誘惑，勇於面對真實的自己",
         baseName: "honesty&courage",
-        quote: "「拒絕虛幻的魔力，勇敢面對真實的自己。面對唾手可得的作弊零食卻能勇敢說『不』，這份誠實比任何天才光環都還要珍貴！」"
+        quote: "「拒絕虛幻的魔力，勇敢面對真實的自己。面對唾手可得的作弊零食卻能勇敢說『不』，這份誠實比任何天才光環都還要珍貴！」",
+        fallbackSceneSvg: `
+          <svg viewBox="0 0 260 120" class="w-full h-full">
+            <rect width="260" height="120" rx="6" fill="#2d1a12"/>
+            <circle cx="70" cy="40" r="24" fill="rgba(253, 224, 71, 0.14)"/>
+            <!-- 休息室書桌與樂譜 -->
+            <rect x="14" y="74" width="66" height="36" fill="#5c3a21" stroke="#b45309" stroke-width="1.5"/>
+            <rect x="24" y="58" width="28" height="16" rx="2" fill="#fef3c7"/>
+            <!-- 立花響 -->
+            <circle cx="96" cy="52" r="14" fill="#fde6d8"/>
+            <path d="M81 48 Q88 34 110 42 Q112 48 110 52 Z" fill="#78350f"/>
+            <rect x="83" y="68" width="26" height="38" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+            <!-- 淡藍色消消口香糖 -->
+            <rect x="122" y="64" width="22" height="10" rx="2" fill="#7dd3fc" stroke="#e0f2fe" stroke-width="1.5"/>
+            <!-- 紅子老闆娘 -->
+            <circle cx="188" cy="24" r="10" fill="#e5e7eb"/>
+            <circle cx="188" cy="44" r="16" fill="#fde6d8"/>
+            <path d="M162 110 L170 62 L206 62 L214 110 Z" fill="#701a75" stroke="#fbbf24" stroke-width="1.5"/>
+            <rect x="170" y="80" width="36" height="10" fill="#d97706"/>
+            <!-- 招財貓 -->
+            <circle cx="236" cy="54" r="11" fill="#fbbf24"/>
+            <rect x="226" y="65" width="20" height="26" rx="6" fill="#f59e0b"/>
+          </svg>
+        `
       },
       {
         index: 1,
@@ -1611,7 +1724,32 @@
         frontBg: "from-[#78350f] via-[#5c280b] to-[#2e1305]",
         frontSummary: "看清規則與代價，不因得意忘形而大意",
         baseName: "prudent thinking",
-        quote: "「在誘惑面前停一停、想一想，看清代價方能不迷失。仔細閱讀商品說明、聽進別人的提醒，才不會讓好運變成危機喔！」"
+        quote: "「在誘惑面前停一停、想一想，看清代價方能不迷失。仔細閱讀商品說明、聽進別人的提醒，才不會讓好運變成危機喔！」",
+        fallbackSceneSvg: `
+          <svg viewBox="0 0 260 120" class="w-full h-full">
+            <rect width="260" height="120" rx="6" fill="#24150e"/>
+            <!-- 糖果罐背景 -->
+            <rect x="16" y="20" width="24" height="34" rx="4" fill="rgba(253,230,138,0.2)" stroke="#d97706"/>
+            <rect x="46" y="20" width="24" height="34" rx="4" fill="rgba(167,243,208,0.2)" stroke="#d97706"/>
+            <!-- 立花響捧十元硬幣 -->
+            <circle cx="66" cy="58" r="13" fill="#fde6d8"/>
+            <path d="M52 54 Q60 40 80 48 Z" fill="#78350f"/>
+            <rect x="54" y="73" width="24" height="36" rx="4" fill="#f8fafc"/>
+            <circle cx="88" cy="76" r="8" fill="#d97706" stroke="#fde68a" stroke-width="1.5"/>
+            <!-- 音樂果袋 -->
+            <rect x="108" y="56" width="26" height="34" rx="3" fill="#6ee7b7" stroke="#fef08a" stroke-width="1.5"/>
+            <!-- 紅子豎起一指提醒 -->
+            <circle cx="166" cy="24" r="10" fill="#e5e7eb"/>
+            <circle cx="166" cy="44" r="15" fill="#fde6d8"/>
+            <path d="M142 110 L150 62 L182 62 L190 110 Z" fill="#701a75" stroke="#fbbf24" stroke-width="1.5"/>
+            <!-- 右下放大鏡特寫背面注意事項 -->
+            <circle cx="222" cy="82" r="28" fill="#1e293b" stroke="#fde047" stroke-width="2.5"/>
+            <rect x="208" y="66" width="28" height="32" rx="2" fill="#d1fae5"/>
+            <line x1="212" y1="74" x2="232" y2="74" stroke="#374151" stroke-width="1.5"/>
+            <line x1="212" y1="80" x2="232" y2="80" stroke="#374151" stroke-width="1.5"/>
+            <line x1="212" y1="86" x2="226" y2="86" stroke="#374151" stroke-width="1.5"/>
+          </svg>
+        `
       },
       {
         index: 2,
@@ -1622,7 +1760,32 @@
         frontBg: "from-[#065f46] via-[#064e3b] to-[#022c22]",
         frontSummary: "不走捷徑，用汗水與練習彈奏美妙樂章",
         baseName: "steady growth",
-        quote: "「不走捷徑，用汗水與練習彈奏出屬於自己的美妙樂章。只有靠自己流汗練習得來的實力，才不會在關鍵時刻背叛你！」"
+        quote: "「不走捷徑，用汗水與練習彈奏出屬於自己的美妙樂章。只有靠自己流汗練習得來的實力，才不會在關鍵時刻背叛你！」",
+        fallbackSceneSvg: `
+          <svg viewBox="0 0 260 120" class="w-full h-full">
+            <rect width="260" height="120" rx="6" fill="#fef3c7"/>
+            <!-- 陽光窗戶 -->
+            <rect x="14" y="12" width="68" height="46" rx="3" fill="#fffbeb" stroke="#b45309" stroke-width="2"/>
+            <!-- 直立鋼琴 -->
+            <rect x="18" y="48" width="76" height="62" rx="3" fill="#5c3a21" stroke="#78350f" stroke-width="1.5"/>
+            <rect x="38" y="34" width="32" height="20" rx="1" fill="#ffffff" stroke="#9ca3af"/>
+            <rect x="22" y="72" width="76" height="10" fill="#fffbeb" stroke="#78350f"/>
+            <!-- 金色音符 -->
+            <text x="78" y="42" fill="#d97706" font-size="14" font-weight="bold">♪</text>
+            <text x="94" y="30" fill="#f59e0b" font-size="16" font-weight="bold">♫</text>
+            <!-- 立花響專注彈琴 -->
+            <circle cx="114" cy="54" r="13" fill="#fde6d8"/>
+            <path d="M100 50 Q108 36 128 44 Z" fill="#78350f"/>
+            <rect x="102" y="69" width="24" height="34" rx="4" fill="#f8fafc"/>
+            <!-- 佐佐木老師驚喜觀看 -->
+            <circle cx="174" cy="36" r="13" fill="#fde6d8"/>
+            <circle cx="174" cy="21" r="8" fill="#5c3a21"/>
+            <rect x="160" y="51" width="28" height="58" rx="4" fill="#d6c7a9"/>
+            <!-- 招財貓拍手加油 -->
+            <circle cx="228" cy="44" r="12" fill="#fbbf24"/>
+            <rect x="216" y="56" width="24" height="32" rx="6" fill="#f59e0b"/>
+          </svg>
+        `
       }
     ];
 
@@ -1635,11 +1798,11 @@
       }
     }
 
-    // 自動依序嘗試 .jpg、.jpeg、.png；若在預覽環境尚未放入本地圖檔則顯示精緻備援卡片樣式
+    // 自動依序嘗試 .jpg -> .jpeg -> .png -> .JPG -> .PNG；若在線上預覽尚未放入本地圖檔則顯示精緻向量插畫卡片
     function handleTraitCardImgError(imgEl, cardIndex) {
       const card = TRAIT_CARDS[cardIndex];
       if (!card) return;
-      const extensions = [".jpg", ".jpeg", ".png"];
+      const extensions = [".jpg", ".jpeg", ".png", ".JPG", ".PNG"];
       const nextIdx = parseInt(imgEl.dataset.extIdx || "0", 10) + 1;
 
       if (nextIdx < extensions.length) {
@@ -1648,19 +1811,18 @@
         return;
       }
 
-      // 精緻備援卡片樣式（仿復古木框與羊皮紙勳章視覺）
+      // 精緻向量插畫備援卡片樣式（仿復古木框、場景插畫與羊皮紙勳章視覺）
       const fallbackCard = document.createElement("div");
-      fallbackCard.className = "w-full h-full bg-[#3b2113] border-4 border-[#d97706] p-3 flex flex-col justify-between text-center select-none";
+      fallbackCard.className = "w-full h-full bg-[#3b2113] border-4 border-[#d97706] p-2.5 flex flex-col justify-between text-center select-none";
       fallbackCard.innerHTML = `
         <div class="bg-gradient-to-r from-[#b48a3e] via-[#fde68a] to-[#b48a3e] text-[#2c1810] rounded-lg py-1 px-2 shadow">
-          <div class="font-black text-sm sm:text-base tracking-wide">${card.title}</div>
-          <div class="text-[9px] font-bold tracking-widest opacity-80">${card.subtitle}</div>
+          <div class="font-black text-xs sm:text-sm tracking-wide">${card.title}</div>
+          <div class="text-[8px] font-bold tracking-widest opacity-80">${card.subtitle}</div>
         </div>
-        <div class="my-auto py-1">
-          <div class="text-3xl sm:text-4xl mb-1">${card.badgeIcon}</div>
-          <div class="text-[11px] text-amber-200 font-bold">將 <code class="bg-black/40 px-1 rounded">${card.baseName}.jpg</code> 放入同資料夾即顯示專屬插畫</div>
+        <div class="my-1 flex-1 overflow-hidden rounded-lg border border-[#d97706]/60">
+          ${card.fallbackSceneSvg}
         </div>
-        <div class="bg-[#f5ebd6] border border-[#8c6239] rounded-md p-1.5 text-[#3b2113] text-[11px] font-bold leading-tight">
+        <div class="bg-[#f5ebd6] border border-[#8c6239] rounded-md p-1 text-[#3b2113] text-[10px] sm:text-[11px] font-bold leading-tight">
           🏅「${card.medalName}」解鎖！
         </div>
       `;
@@ -1681,7 +1843,7 @@
             <div onclick="toggleFlipCard(${card.index})" class="trait-card-wrapper cursor-pointer select-none">
               <div id="trait-flip-inner-${card.index}" class="flip-inner">
                 <!-- 正面：金色徽章與翻牌提示 -->
-                <div class="flip-face bg-gradient-to-br ${card.frontBg} border-4 border-[#d97706] p-4 flex flex-col items-center justify-center text-center text-white shadow-xl">
+                <div class="flip-face bg-gradient-to-br ${card.frontBg} border-4 border-[#f59e0b] p-4 flex flex-col items-center justify-center text-center text-white shadow-xl">
                   <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-300 to-amber-600 border-2 border-amber-100 flex items-center justify-center text-3xl shadow-lg mb-2">
                     ${card.badgeIcon}
                   </div>
@@ -1694,7 +1856,7 @@
                 </div>
 
                 <!-- 背面：完整 5:4 專屬插畫圖卡 -->
-                <div class="flip-face flip-back border-4 border-[#d97706] shadow-xl flex items-center justify-center">
+                <div class="flip-face flip-back border-4 border-[#f59e0b] shadow-xl flex items-center justify-center">
                   <img src="${initialSrc}" alt="${card.title}" data-ext-idx="0"
                     onload="handleTraitCardImgLoad(this, '${card.baseName}')"
                     onerror="handleTraitCardImgError(this, ${card.index})"
@@ -1704,7 +1866,7 @@
             </div>
 
             <!-- 卡片下方操作鈕：放大欣賞圖卡 -->
-            <button onclick="openCardLightbox(${card.index})" class="mt-2.5 w-full py-2 px-3 bg-[#f3ead3] hover:bg-amber-200 text-[#4a2c18] font-black text-xs sm:text-sm rounded-xl border-2 border-[#b48a3e] shadow-sm transition flex items-center justify-center gap-1.5">
+            <button onclick="openCardLightbox(${card.index})" class="mt-2.5 w-full py-2.5 px-3 bg-[#f3ead3] hover:bg-amber-200 text-[#4a2c18] font-black text-xs sm:text-sm rounded-xl border-2 border-[#d97706] shadow-sm transition flex items-center justify-center gap-1.5">
               <span>🔍 放大欣賞圖卡</span>
             </button>
           </div>
