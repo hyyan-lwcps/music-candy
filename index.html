@@ -197,7 +197,7 @@
       <h3 class="text-xl font-black text-[#78350f] mb-1">教師課堂快捷控制</h3>
       <p class="text-sm text-gray-600 mb-3">輸入教師授權碼，可直接跳轉至指定幕次或延伸關卡：</p>
       
-      <input type="password" id="teacher-pin-input" placeholder="請輸入授權碼 (預設 221b)" 
+      <input type="password" id="teacher-pin-input" placeholder="請輸入教師授權碼" 
         class="w-full p-3 border-2 border-[#b48a3e] rounded-xl text-center text-lg font-bold mb-3 bg-white focus:outline-none focus:border-purple-700">
       
       <div class="grid grid-cols-2 gap-2 mb-4">
@@ -1343,7 +1343,7 @@
     function executeTeacherJump(targetTab) {
       const pin = document.getElementById('teacher-pin-input').value.trim();
       if (pin !== TEACHER_PIN) {
-        showModal("❌", "授權碼錯誤", "請輸入正確的教師授權碼（預設為 221b）才能跳轉關卡喔！");
+        showModal("❌", "授權碼錯誤", "請輸入正確的教師授權碼才能跳轉關卡喔！");
         return;
       }
 
