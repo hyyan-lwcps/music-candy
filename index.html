@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>神奇柑仔店錢天堂：〈音樂果〉互動劇場</title>
+  <!-- 載入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 載入清晰易讀的繁體中文字型 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Noto Sans TC', "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    /* 錢天堂神秘和風背景紋理 */
+    body {
+      background-color: #1a122b;
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.14) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(139, 92, 246, 0.18) 0%, transparent 45%),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 2px, transparent 2px, transparent 10px);
+      min-height: 100vh;
+      color: #2b1e16;
+    }
+
+    /* 和紙質感主卡片 */
+    .washi-card {
+      background: rgba(253, 250, 242, 0.97);
+      border: 3px solid #b48a3e;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), inset 0 0 25px rgba(180, 138, 62, 0.15);
+    }
+
+    /* 導覽頁籤樣式 */
+    .tab-btn {
+      transition: all 0.25s ease;
+    }
+    .tab-btn.locked {
+      opacity: 0.55;
+      cursor: not-allowed;
+      background-color: #e5dec9;
+      color: #786c5e;
+    }
+    .tab-btn.unlocked {
+      cursor: pointer;
+      background-color: #f3ead3;
+      color: #5c3a18;
+    }
+    .tab-btn.unlocked:hover {
+      background-color: #e6d6b3;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #4c1d95, #2e1065) !important;
+      color: #fde68a !important;
+      border-color: #d97706 !important;
+      box-shadow: 0 -3px 10px rgba(76, 29, 149, 0.25);
+    }
+
+    /* 劇場抉擇按鈕特效 */
+    .choice-card {
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid #d6c7a9;
+      background: #fffdf9;
+    }
+    .choice-card:hover {
+      transform: translateY(-2px);
+      border-color: #7c3aed;
+      box-shadow: 0 8px 18px rgba(124, 58, 237, 0.15);
+    }
+    .choice-card.selected-a {
+      border-color: #d97706;
+      background: #fffbeb;
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25);
+    }
+    .choice-card.selected-b {
+      border-color: #059669;
+      background: #ecfdf5;
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.25);
+    }
+
+    /* 3D 翻轉特質卡特效 */
+    .flip-perspective {
+      perspective: 1000px;
+    }
+    .flip-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .flip-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+    .flip-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    .flip-back {
+      transform: rotateY(180deg);
+    }
+
+    /* 淡入動畫 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.35s ease-out forwards;
+    }
+
+    /* ==========================================
+       3D 翻頁揭書閱讀器專屬樣式
+       ========================================== */
+    .book-stage {
+      perspective: 1800px;
+    }
+    .book-cover {
+      background: linear-gradient(135deg, #4a2c18 0%, #2c1810 100%);
+      border: 3px solid #b48a3e;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45), inset 0 0 15px rgba(0, 0, 0, 0.6);
+    }
+    .book-paper {
+      position: relative;
+      background: #fdfbf5;
+      /* 左側書脊裝訂陰影 + 右側書頁厚度立體感 */
+      box-shadow:
+        inset 18px 0 24px -12px rgba(60, 40, 20, 0.28),
+        3px 3px 0 #ebe3d0,
+        6px 6px 0 #d8ccb4,
+        9px 9px 14px rgba(0, 0, 0, 0.35);
+      transform-style: preserve-3d;
+    }
+    /* 翻往下一頁的 3D 書頁動畫 */
+    @keyframes pageFlipNext {
+      0% {
+        transform: rotateY(0deg);
+        box-shadow: inset 18px 0 24px -12px rgba(60, 40, 20, 0.25), -5px 0 15px rgba(0,0,0,0.15);
+      }
+      50% {
+        box-shadow: inset 18px 0 24px -12px rgba(60, 40, 20, 0.35), -25px 8px 35px rgba(0,0,0,0.35);
+      }
+      100% {
+        transform: rotateY(-165deg);
+        opacity: 0;
+        box-shadow: inset 18px 0 24px -12px rgba(60, 40, 20, 0.1), 0 0 0 rgba(0,0,0,0);
+      }
+    }
+    /* 翻回上一頁的 3D 書頁動畫 */
+    @keyframes pageFlipPrev {
+      0% {
+        transform: rotateY(-165deg);
+        opacity: 0.2;
+      }
+      50% {
+        opacity: 1;
+        box-shadow: inset 18px 0 24px -12px rgba(60, 40, 20, 0.35), -25px 8px 35px rgba(0,0,0,0.35);
+      }
+      100% {
+        transform: rotateY(0deg);
+        opacity: 1;
+        box-shadow: inset 18px 0 24px -12px rgba(60, 40, 20, 0.25);
+      }
+    }
+    .flip-leaf-overlay {
+      position: absolute;
+      inset: 0;
+      background: #fdfbf5;
+      transform-origin: left center;
+      backface-visibility: hidden;
+      pointer-events: none;
+      z-index: 20;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+    .animate-flip-next {
+      animation: pageFlipNext 0.58s cubic-bezier(0.35, 0.05, 0.25, 1) forwards;
+    }
+    .animate-flip-prev {
+      animation: pageFlipPrev 0.58s cubic-bezier(0.35, 0.05, 0.25, 1) forwards;
+    }
+  </style>
+</head>
+<body class="p-3 sm:p-6 flex justify-center items-start">
+
+  <!-- ==========================================
+       2. 教師快捷跳轉彈窗 (授權碼: 221b)
+       ========================================== -->
+  <div id="teacher-modal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
+    <div class="bg-[#fdfbf7] border-4 border-[#78350f] rounded-2xl max-w-md w-full p-6 shadow-2xl text-center animate-fade-in">
+      <div class="text-3xl mb-2">🏫</div>
+      <h3 class="text-xl font-black text-[#78350f] mb-1">教師課堂快捷控制</h3>
+      <p class="text-sm text-gray-600 mb-3">輸入教師授權碼，可直接跳轉至指定幕次或延伸關卡：</p>
+      
+      <input type="password" id="teacher-pin-input" placeholder="請輸入授權碼 (預設 221b)" 
+        class="w-full p-3 border-2 border-[#b48a3e] rounded-xl text-center text-lg font-bold mb-3 bg-white focus:outline-none focus:border-purple-700">
+      
+      <div class="grid grid-cols-2 gap-2 mb-4">
+        <button onclick="executeTeacherJump(1)" class="p-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg text-xs sm:text-sm border border-amber-400">1. 第一幕 (p.114-123)</button>
+        <button onclick="executeTeacherJump(2)" class="p-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg text-xs sm:text-sm border border-amber-400">2. 第二幕 (p.123-129)</button>
+        <button onclick="executeTeacherJump(3)" class="p-2 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg text-xs sm:text-sm border border-amber-400">3. 第三幕 (p.129-140)</button>
+        <button onclick="executeTeacherJump(4)" class="p-2 bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold rounded-lg text-xs sm:text-sm border border-rose-400">4. 故事結局 (p.140-144)</button>
+        <button onclick="executeTeacherJump(5)" class="p-2 bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold rounded-lg text-xs sm:text-sm border border-purple-400">5. 延伸一：商品說明</button>
+        <button onclick="executeTeacherJump(6)" class="p-2 bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold rounded-lg text-xs sm:text-sm border border-purple-400">6. 延伸二：心情溫度</button>
+        <button onclick="executeTeacherJump(7)" class="col-span-2 p-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold rounded-lg text-xs sm:text-sm border border-emerald-400">7. 大結局：3D 閱讀特質卡</button>
+      </div>
+
+      <button onclick="closeTeacherModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl text-sm">
+        取消返回
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       2.6 書頁全螢幕放大檢視彈窗 (方便小三小四看清注音與文字)
+       ========================================== -->
+  <div id="zoom-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-2 sm:p-4">
+    <div class="w-full max-w-4xl flex justify-between items-center text-white mb-2 px-2">
+      <span id="zoom-caption" class="font-bold text-amber-300 text-sm sm:text-base">📖 第 114 頁</span>
+      <div class="flex items-center gap-2">
+        <button onclick="flipZoomPage(-1)" class="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs sm:text-sm font-bold">◀ 上一頁</button>
+        <button onclick="flipZoomPage(1)" class="px-3 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-xs sm:text-sm font-bold">下一頁 ▶</button>
+        <button onclick="closeZoomModal()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 rounded-lg text-xs sm:text-sm font-bold">✕ 關閉放大</button>
+      </div>
+    </div>
+    <div id="zoom-content" class="w-full max-w-4xl max-h-[85vh] overflow-auto bg-[#fdfbf5] rounded-xl p-2 sm:p-4 flex items-center justify-center shadow-2xl">
+      <!-- 動態填入放大後的書頁圖片或模擬頁 -->
+    </div>
+  </div>
+
+  <!-- ==========================================
+       2.7 通用訊息提示彈窗 (取代 alert，支援教師控制與關卡回饋)
+       ========================================== -->
+  <div id="custom-modal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
+    <div class="bg-[#fdfbf7] border-4 border-[#b48a3e] rounded-2xl max-w-md w-full p-6 shadow-2xl text-center animate-fade-in">
+      <div id="modal-icon" class="text-4xl mb-2">🪙</div>
+      <h3 id="modal-title" class="text-xl font-black text-[#3b0764] mb-2">提示訊息</h3>
+      <p id="modal-message" class="text-sm sm:text-base text-gray-700 whitespace-pre-line leading-relaxed mb-5"></p>
+      <button onclick="closeModal()" class="w-full py-2.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow hover:opacity-95 transition">
+        我知道了
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       2.5 故事全文隨時查閱彈窗 (解決只有一本書的問題)
+       ========================================== -->
+  <div id="fullstory-modal" class="hidden fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
+    <div class="bg-[#fdfbf7] border-4 border-[#581c87] rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
+      <div class="p-4 sm:p-5 border-b-2 border-[#d6c7a9] flex items-center justify-between bg-purple-50 rounded-t-xl">
+        <h3 class="text-lg sm:text-xl font-black text-[#3b0764]">📖 《音樂果》故事原文查閱室</h3>
+        <button onclick="closeFullStoryModal()" class="px-3 py-1 bg-purple-900 text-amber-200 font-bold rounded-lg text-sm hover:opacity-90">✕ 關閉</button>
+      </div>
+      <div class="p-5 overflow-y-auto space-y-4 text-sm sm:text-base text-gray-800 leading-relaxed">
+        <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200">
+          <h4 class="font-black text-[#78350f] mb-1">【第一部分：昏暗小巷的奇遇】</h4>
+          <p>立花響（10歲）非常討厭去上鋼琴課，因為佐佐木老師很嚴格，每次都挨罵。他在去鋼琴教室的路上，聽見小巷深處傳來美妙的〈土耳其進行曲〉。走進去一看，一個又高又大、一頭白髮、身穿紫紅色古錢幣和服的阿姨（紅子），正在彈奏一架被當作大型垃圾丟掉的破舊鋼琴。</p>
+          <p class="mt-2">紅子從袖子裡拿出一小袋寫滿五線譜的<strong>「莫札特風味音樂果」</strong>，收下響錢包裡的<strong>平成十三年十元硬幣</strong>。臨走前紅子警告他：「音樂果可以讓人充分享受音樂，但要小心，千萬不要得意忘形。」</p>
+        </div>
+        <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200">
+          <h4 class="font-black text-[#78350f] mb-1">【第二部分：一夕成名的鋼琴神童】</h4>
+          <p>個性急躁的響當場打開袋子，吃光了金黃色、音樂記號形狀的小餅乾（有高音譜記號、八分音符、二分音符和延音符號）。進到教室後，他的手指竟然自動彈出完美無缺的〈土耳其進行曲〉！</p>
+          <p class="mt-2">響立刻被捧為「天才少年鋼琴家」，每天忙著接受電視和雜誌採訪，平時再也不練琴。不久後他受邀參加大型鋼琴比賽，比賽前一星期收到指定曲目樂譜，但他連看都不看一眼。</p>
+        </div>
+        <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200">
+          <h4 class="font-black text-[#78350f] mb-1">【第三部分：舞台危機與休息室考驗】</h4>
+          <p>比賽當天，座無虛席。響打開樂譜一看，竟然是<strong>舒曼的〈幻想曲〉</strong>！無論他怎麼等，手指一動也不動。響狼狽地衝進休息室，翻出空袋子查看背面說明，這才發現上面寫著：<strong>「每袋音樂果只有一位音樂家的口味，能夠完美演奏那位音樂家的樂曲，卻無法演奏其他作曲家的樂曲。」</strong></p>
+          <p class="mt-2">此時外面吵鬧聲突然消失，紅子走進休息室，假稱上次賣的音樂果過期了，拿出一包免費的「舒曼風味音樂果」要他挑選。</p>
+        </div>
+        <div class="bg-emerald-50/70 p-4 rounded-xl border border-emerald-200">
+          <h4 class="font-black text-emerald-900 mb-1">【第四部分：消消口香糖與重新出發】</h4>
+          <p>響低頭拒絕了舒曼音樂果，流著眼淚說自己不該靠不勞而獲的方法贏得比賽，只希望能回到還沒吃音樂果之前。紅子於是遞給他用<strong>淡藍色紙包著的「消消口香糖」</strong>，只要吃了就能消除之前的時間和發生的事。</p>
+          <p class="mt-2">嚼完口香糖後，響回過神發現自己正站在小巷內，忘記了剛才的經歷。他快步走向鋼琴教室，心裡卻有一種異樣的感覺——今天他不像平時那麼討厭上鋼琴課了。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       主容器
+       ========================================== -->
+  <div class="washi-card rounded-3xl w-full max-w-4xl p-4 sm:p-8 my-2">
+
+    <!-- 頂部錢天堂招牌橫幅 + 常駐快捷控制列 -->
+    <header class="text-center border-b-2 border-[#d6c7a9] pb-4 mb-6 relative">
+      <!-- 常駐功能按鈕列 -->
+      <div class="flex flex-wrap justify-between items-center gap-2 mb-3 pb-2 border-b border-dashed border-[#d6c7a9]">
+        <button onclick="goHome()" class="px-3 py-1.5 bg-[#f3ead3] hover:bg-[#e6d6b3] text-[#5c3a18] font-bold rounded-lg text-xs sm:text-sm border border-[#b48a3e] transition flex items-center gap-1">
+          <span>🏠 返回首頁</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="openFullStoryModal()" class="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold rounded-lg text-xs sm:text-sm border border-purple-400 transition flex items-center gap-1">
+            <span>📖 故事全文參考</span>
+          </button>
+          <button onclick="openTeacherModal()" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg text-xs sm:text-sm border border-amber-400 transition flex items-center gap-1">
+            <span>🔑 教師快捷控制</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="inline-flex items-center gap-2 bg-[#3b0764] text-amber-200 px-4 py-1 rounded-full text-xs sm:text-sm font-bold tracking-wider mb-2 shadow">
+        <span>🪙 神奇柑仔店錢天堂</span>
+        <span>•</span>
+        <span>四年級讀書會互動劇場</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black text-[#2e1065] tracking-tight">
+        🎵 故事劇場：《我不想吃音樂果！》
+      </h1>
+      <p class="text-sm sm:text-base text-[#78350f] font-medium mt-1">
+        「如果我是立花響，在關鍵時刻我會怎麼做？」
+      </p>
+    </header>
+
+    <!-- ==========================================
+         歡迎首頁畫面
+         ========================================== -->
+    <section id="welcome-screen" class="animate-fade-in text-center py-2 sm:py-4">
+      <div class="bg-gradient-to-br from-[#2e1065] via-[#3b0764] to-[#1e1b4b] text-white rounded-2xl p-6 sm:p-8 mb-6 border-2 border-[#d97706] shadow-xl">
+        <div class="text-4xl sm:text-5xl mb-3">🎹🍬✨</div>
+        <h2 class="text-xl sm:text-2xl font-black text-amber-300 mb-3">
+          歡迎來到「錢天堂」讀書會互動劇場！
+        </h2>
+        <p class="text-sm sm:text-base text-amber-50/90 max-w-2xl mx-auto leading-relaxed mb-5">
+          10 歲的立花響因為害怕嚴格的鋼琴老師，在昏暗小巷遇見了神秘老闆娘「紅子」，買下了一包神奇的《音樂果》……<br>
+          請和組員一起<strong>翻閱原著書頁</strong>，並在三個關鍵時刻替立花響做出選擇！
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left max-w-2xl mx-auto mb-6">
+          <div class="bg-white/10 border border-amber-400/30 rounded-xl p-3">
+            <div class="text-amber-300 font-black text-sm mb-1">📖 1. 3D 翻頁讀原著</div>
+            <p class="text-xs text-amber-100/85">每幕皆附原書對應頁碼（p.114–144），支援點擊與滑動翻頁。</p>
+          </div>
+          <div class="bg-white/10 border border-amber-400/30 rounded-xl p-3">
+            <div class="text-amber-300 font-black text-sm mb-1">🎭 2. 三幕角色抉擇</div>
+            <p class="text-xs text-amber-100/85">小組討論「如果我是立花響」，看看不同選擇會帶來什麼結果。</p>
+          </div>
+          <div class="bg-white/10 border border-amber-400/30 rounded-xl p-3">
+            <div class="text-amber-300 font-black text-sm mb-1">🃏 3. 延伸挑戰與翻牌</div>
+            <p class="text-xs text-amber-100/85">破解商品說明書與心情溫度計，解鎖專屬 3D 閱讀特質卡！</p>
+          </div>
+        </div>
+
+        <button onclick="startTheater()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-[#2e1065] font-black text-base sm:text-lg rounded-2xl shadow-lg transform hover:scale-[1.02] transition">
+          🎬 推開錢天堂大門：進入第一幕 ➡️
+        </button>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         主活動控制台 (分頁導覽 + 六大關卡)
+         ========================================== -->
+    <main id="main-dashboard" class="hidden">
+      
+      <!-- 頂部 6 關卡頁籤 -->
+      <nav class="flex gap-1 sm:gap-1.5 mb-6 border-b-2 border-[#b48a3e] pb-2 overflow-x-auto">
+        <button id="nav-btn-1" onclick="switchTab(1)" class="tab-btn unlocked active flex-1 min-w-[82px] py-2 px-1.5 rounded-t-xl font-bold text-xs sm:text-sm border border-b-0 border-[#c8b99c] text-center">
+          🎭 第一幕<br><span class="text-[10px] font-normal">p.114-123</span>
+        </button>
+        <button id="nav-btn-2" onclick="switchTab(2)" class="tab-btn locked flex-1 min-w-[82px] py-2 px-1.5 rounded-t-xl font-bold text-xs sm:text-sm border border-b-0 border-[#c8b99c] text-center">
+          🔒 第二幕<br><span class="text-[10px] font-normal">p.123-129</span>
+        </button>
+        <button id="nav-btn-3" onclick="switchTab(3)" class="tab-btn locked flex-1 min-w-[82px] py-2 px-1.5 rounded-t-xl font-bold text-xs sm:text-sm border border-b-0 border-[#c8b99c] text-center">
+          🔒 第三幕<br><span class="text-[10px] font-normal">p.129-140</span>
+        </button>
+        <button id="nav-btn-4" onclick="switchTab(4)" class="tab-btn locked flex-1 min-w-[82px] py-2 px-1.5 rounded-t-xl font-bold text-xs sm:text-sm border border-b-0 border-[#c8b99c] text-center">
+          🔒 故事結局<br><span class="text-[10px] font-normal">p.140-144</span>
+        </button>
+        <button id="nav-btn-5" onclick="switchTab(5)" class="tab-btn locked flex-1 min-w-[82px] py-2 px-1.5 rounded-t-xl font-bold text-xs sm:text-sm border border-b-0 border-[#c8b99c] text-center">
+          🔒 延伸一<br><span class="text-[10px] font-normal">商品說明書</span>
+        </button>
+        <button id="nav-btn-6" onclick="switchTab(6)" class="tab-btn locked flex-1 min-w-[82px] py-2 px-1.5 rounded-t-xl font-bold text-xs sm:text-sm border border-b-0 border-[#c8b99c] text-center">
+          🔒 延伸二<br><span class="text-[10px] font-normal">心情溫度計</span>
+        </button>
+      </nav>
+
+      <!-- ==========================================
+           第一幕：神秘小巷的誘惑 (第 114 頁至 123 頁)
+           ========================================== -->
+      <div id="tab-1" class="tab-content animate-fade-in">
+        <div class="flex items-center justify-between mb-3">
+          <span class="bg-purple-900 text-amber-200 text-xs font-bold px-3 py-1 rounded-full">第一幕：面對神奇零食與警告</span>
+          <span class="text-xs text-gray-500 font-bold">進度 1 / 6</span>
+        </div>
+
+        <!-- 互動翻頁書閱讀器（第 114 頁至 123 頁） -->
+        <div id="flipbook-container-1" class="mb-5"></div>
+
+        <!-- 升級版場景插畫 SVG + 清楚圖說 -->
+        <div class="bg-[#241b35] rounded-2xl p-4 mb-5 border-2 border-[#b48a3e] flex flex-col items-center text-white">
+          <svg viewBox="0 0 360 150" class="w-full max-w-md h-auto">
+            <!-- 小巷背景磚牆與路燈光暈 -->
+            <rect x="0" y="0" width="360" height="150" rx="10" fill="#1e1633"/>
+            <circle cx="180" cy="40" r="85" fill="rgba(253, 230, 138, 0.08)"/>
+            <!-- 飄浮的音符 -->
+            <text x="115" y="32" fill="#fde047" font-size="16">♪</text>
+            <text x="145" y="22" fill="#fde047" font-size="20">♫</text>
+            <text x="175" y="35" fill="#fde047" font-size="15">♩</text>
+
+            <!-- 左側：直立式舊鋼琴 -->
+            <g transform="translate(25, 32)">
+              <rect x="0" y="0" width="85" height="95" rx="4" fill="#5c3a21" stroke="#d97706" stroke-width="2"/>
+              <rect x="6" y="8" width="73" height="35" rx="2" fill="#452712"/>
+              <!-- 琴鍵盤 -->
+              <rect x="-5" y="52" width="95" height="14" rx="2" fill="#fef3c7" stroke="#78350f" stroke-width="1.5"/>
+              <rect x="5" y="52" width="5" height="8" fill="#1f2937"/>
+              <rect x="15" y="52" width="5" height="8" fill="#1f2937"/>
+              <rect x="30" y="52" width="5" height="8" fill="#1f2937"/>
+              <rect x="40" y="52" width="5" height="8" fill="#1f2937"/>
+              <rect x="50" y="52" width="5" height="8" fill="#1f2937"/>
+              <rect x="65" y="52" width="5" height="8" fill="#1f2937"/>
+              <rect x="75" y="52" width="5" height="8" fill="#1f2937"/>
+              <text x="42" y="84" text-anchor="middle" fill="#fde68a" font-size="10" font-weight="bold">舊鋼琴</text>
+            </g>
+
+            <!-- 中間：高大的紅子老闆娘 -->
+            <g transform="translate(135, 12)">
+              <!-- 白髮丸子頭與髮簪 -->
+              <circle cx="40" cy="14" r="11" fill="#f9fafb"/>
+              <line x1="22" y1="10" x2="58" y2="18" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="58" cy="18" r="3.5" fill="#fbbf24"/>
+              <!-- 臉部 -->
+              <circle cx="40" cy="34" r="16" fill="#fde6d8"/>
+              <circle cx="34" cy="32" r="2" fill="#1f2937"/>
+              <circle cx="46" cy="32" r="2" fill="#1f2937"/>
+              <path d="M35 40 Q40 45 45 40" stroke="#b91c1c" stroke-width="2" fill="none"/>
+              <!-- 紫紅色和服身軀 -->
+              <path d="M12 118 L20 52 L60 52 L68 118 Z" fill="#701a75" stroke="#fbbf24" stroke-width="2"/>
+              <!-- 和服腰帶 -->
+              <rect x="18" y="74" width="44" height="14" fill="#d97706"/>
+              <!-- 遞出的音樂果小袋 -->
+              <rect x="62" y="62" width="22" height="28" rx="3" fill="#10b981" stroke="#fef08a" stroke-width="1.5"/>
+              <text x="40" y="110" text-anchor="middle" fill="#fde68a" font-size="10" font-weight="bold">紅子老闆娘</text>
+            </g>
+
+            <!-- 右側：仰望的立花響（10歲男孩） -->
+            <g transform="translate(250, 48)">
+              <!-- 頭髮與頭 -->
+              <circle cx="35" cy="24" r="14" fill="#fde6d8"/>
+              <path d="M20 22 Q25 6 48 14 Q52 20 49 24 Z" fill="#374151"/>
+              <circle cx="30" cy="23" r="2" fill="#1f2937"/>
+              <circle cx="32" cy="30" r="2.5" fill="#ef4444"/>
+              <!-- 學生服 -->
+              <path d="M20 82 L24 40 L46 40 L50 82 Z" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/>
+              <text x="35" y="75" text-anchor="middle" fill="#1f2937" font-size="10" font-weight="bold">立花響</text>
+            </g>
+          </svg>
+          <p class="text-xs text-amber-200/90 mt-2 text-center">
+            🖼️ 插畫說明：昏暗小巷深處，身穿紫紅色和服的高大老闆娘「紅子」，將《音樂果》遞給仰望著她的立花響。
+          </p>
+        </div>
+
+        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-3">
+          🤔 【如果我是立花響】拿到這包《音樂果》後，我會怎麼做？
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          <button id="act1-opt-a" onclick="chooseAct1('A')" class="choice-card p-4 rounded-2xl text-left flex flex-col justify-between">
+            <div>
+              <span class="inline-block bg-amber-100 text-amber-900 font-black px-2.5 py-0.5 rounded-md text-xs mb-2">選項 A：迫不及待派</span>
+              <p class="font-bold text-gray-900 text-base mb-1">管他什麼警告，先吃光整包再去上課！</p>
+              <p class="text-xs text-gray-600">餅乾鹹鹹甜甜又會在嘴裡跳動，趕快全部吃完，待會就能讓嚴格的佐佐木老師大吃一驚！</p>
+            </div>
+          </button>
+
+          <button id="act1-opt-b" onclick="chooseAct1('B')" class="choice-card p-4 rounded-2xl text-left flex flex-col justify-between">
+            <div>
+              <span class="inline-block bg-emerald-100 text-emerald-900 font-black px-2.5 py-0.5 rounded-md text-xs mb-2">選項 B：謹慎觀察派</span>
+              <p class="font-bold text-gray-900 text-base mb-1">先翻到袋子背面，看清楚說明書再吃！</p>
+              <p class="text-xs text-gray-600">既然阿姨特別警告「不要得意忘形」，先檢查包裝背面的注意事項，弄清楚有沒有使用限制。</p>
+            </div>
+          </button>
+        </div>
+
+        <!-- 互動劇場演繹結果區 -->
+        <div id="act1-feedback" class="hidden bg-white border-2 border-[#b48a3e] rounded-2xl p-5 mb-4 animate-fade-in"></div>
+
+        <button id="act1-next-btn" onclick="unlockAndGo(2)" class="hidden w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+          🎬 繼續劇情：前往【第二幕：神童光環】➡️
+        </button>
+      </div>
+
+      <!-- ==========================================
+           第二幕：神童光環與比賽前夕 (第 123 頁至 129 頁)
+           ========================================== -->
+      <div id="tab-2" class="tab-content hidden animate-fade-in">
+        <div class="flex items-center justify-between mb-3">
+          <span class="bg-purple-900 text-amber-200 text-xs font-bold px-3 py-1 rounded-full">第二幕：成名後的態度考驗</span>
+          <span class="text-xs text-gray-500 font-bold">進度 2 / 6</span>
+        </div>
+
+        <!-- 互動翻頁書閱讀器（第 123 頁至 129 頁） -->
+        <div id="flipbook-container-2" class="mb-5"></div>
+
+        <!-- 場景插畫 SVG -->
+        <div class="bg-[#241b35] rounded-2xl p-4 mb-5 border-2 border-[#b48a3e] flex flex-col sm:flex-row items-center gap-4 text-white">
+          <svg viewBox="0 0 180 130" class="w-40 h-28 shrink-0">
+            <!-- 聚光燈與獎盃 -->
+            <polygon points="90,10 30,115 150,115" fill="rgba(253, 224, 71, 0.18)"/>
+            <path d="M68 40 H112 L105 72 C102 82, 78 82, 75 72 Z" fill="#fbbf24" stroke="#fef08a" stroke-width="2"/>
+            <rect x="85" y="80" width="10" height="18" fill="#f59e0b"/>
+            <rect x="70" y="98" width="40" height="10" rx="2" fill="#b45309"/>
+            <text x="90" y="63" text-anchor="middle" fill="#78350f" font-size="14" font-weight="900">天才</text>
+            <!-- 閃亮星星 -->
+            <text x="35" y="45" fill="#fde047" font-size="18">★</text>
+            <text x="135" y="50" fill="#fde047" font-size="18">★</text>
+          </svg>
+          <div class="text-sm sm:text-base leading-relaxed space-y-2">
+            <p>所有人都讚美響是百年難得一見的音樂天才，鎂光燈與掌聲讓他飄飄然。</p>
+            <p class="text-amber-300 font-bold">🤔 距離大型鋼琴比賽只剩一星期，如果你是立花響，這段時間你會怎麼做？</p>
+          </div>
+        </div>
+
+        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-3">
+          🤔 【如果我是立花響】距離大賽還有一星期，我會怎麼準備？
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          <button id="act2-opt-a" onclick="chooseAct2('A')" class="choice-card p-4 rounded-2xl text-left flex flex-col justify-between">
+            <div>
+              <span class="inline-block bg-amber-100 text-amber-900 font-black px-2.5 py-0.5 rounded-md text-xs mb-2">選項 A：自信偷懶派</span>
+              <p class="font-bold text-gray-900 text-base mb-1">平時不再練琴，樂譜連看都不看！</p>
+              <p class="text-xs text-gray-600">「我吃了音樂果，只要坐在鋼琴前手指就會自動彈奏，應該沒有曲子能難倒我！」</p>
+            </div>
+          </button>
+
+          <button id="act2-opt-b" onclick="chooseAct2('B')" class="choice-card p-4 rounded-2xl text-left flex flex-col justify-between">
+            <div>
+              <span class="inline-block bg-emerald-100 text-emerald-900 font-black px-2.5 py-0.5 rounded-md text-xs mb-2">選項 B：踏實準備派</span>
+              <p class="font-bold text-gray-900 text-base mb-1">打開指定曲樂譜，每天乖乖練習基本功！</p>
+              <p class="text-xs text-gray-600">「萬一比賽指定的曲子不是莫札特的作品怎麼辦？還是先看清楚樂譜並練習比較保險！」</p>
+            </div>
+          </button>
+        </div>
+
+        <div id="act2-feedback" class="hidden bg-white border-2 border-[#b48a3e] rounded-2xl p-5 mb-4 animate-fade-in"></div>
+
+        <button id="act2-next-btn" onclick="unlockAndGo(3)" class="hidden w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+          🎬 繼續劇情：前往【第三幕：休息室的終極考驗】➡️
+        </button>
+      </div>
+
+      <!-- ==========================================
+           第三幕：休息室的終極考驗 (第 129 頁至 140 頁)
+           ========================================== -->
+      <div id="tab-3" class="tab-content hidden animate-fade-in">
+        <div class="flex items-center justify-between mb-3">
+          <span class="bg-red-900 text-amber-200 text-xs font-bold px-3 py-1 rounded-full">第三幕：最高潮！作弊救場 vs. 誠實面對</span>
+          <span class="text-xs text-gray-500 font-bold">進度 3 / 6</span>
+        </div>
+
+        <!-- 互動翻頁書閱讀器（第 129 頁至 140 頁） -->
+        <div id="flipbook-container-3" class="mb-5"></div>
+
+        <!-- 場景插畫 SVG -->
+        <div class="bg-[#241b35] rounded-2xl p-4 mb-5 border-2 border-[#b48a3e] flex flex-col sm:flex-row items-center gap-4 text-white">
+          <svg viewBox="0 0 180 130" class="w-40 h-28 shrink-0">
+            <!-- 舒曼音樂果包 -->
+            <rect x="45" y="15" width="90" height="100" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
+            <rect x="55" y="28" width="70" height="22" rx="4" fill="#b45309"/>
+            <text x="90" y="43" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">音樂果</text>
+            <text x="90" y="66" text-anchor="middle" fill="#92400e" font-size="11" font-weight="900">舒曼風味</text>
+            <text x="90" y="92" text-anchor="middle" fill="#d97706" font-size="22">🎼</text>
+          </svg>
+          <div class="text-sm sm:text-base leading-relaxed space-y-2">
+            <p>外面全都是電視台記者、老師與媽媽的敲門聲，響已經走投無路。</p>
+            <p class="text-amber-300 font-bold">⚖️ 眼前這包「舒曼風味音樂果」免費又立刻見效，如果你是響，你會伸手接過嗎？</p>
+          </div>
+        </div>
+
+        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-3">
+          🤔 【終極抉擇】面對眼前這包免費的「舒曼風味音樂果」，我會怎麼選？
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          <button id="act3-opt-a" onclick="chooseAct3('A')" class="choice-card p-4 rounded-2xl text-left flex flex-col justify-between">
+            <div>
+              <span class="inline-block bg-amber-100 text-amber-900 font-black px-2.5 py-0.5 rounded-md text-xs mb-2">選項 A：伸手接過救場</span>
+              <p class="font-bold text-gray-900 text-base mb-1">趕快吃下舒曼音樂果，先保住面子再說！</p>
+              <p class="text-xs text-gray-600">外面全都是電視台攝影機和觀眾，只要吃下這一包，就能立刻回到台上完美演出！</p>
+            </div>
+          </button>
+
+          <button id="act3-opt-b" onclick="chooseAct3('B')" class="choice-card p-4 rounded-2xl text-left flex flex-col justify-between">
+            <div>
+              <span class="inline-block bg-emerald-100 text-emerald-900 font-black px-2.5 py-0.5 rounded-md text-xs mb-2">選項 B：低頭誠實拒絕</span>
+              <p class="font-bold text-gray-900 text-base mb-1">拒絕作弊！希望能回到還沒吃音樂果之前！</p>
+              <p class="text-xs text-gray-600">「我不可以靠不勞而獲的方法贏得比賽，對不起那些腳踏實地努力練習的人！」</p>
+            </div>
+          </button>
+        </div>
+
+        <div id="act3-feedback" class="hidden bg-white border-2 border-[#b48a3e] rounded-2xl p-5 mb-4 animate-fade-in"></div>
+
+        <button id="act3-next-btn" onclick="unlockAndGo(4)" class="hidden w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+          📖 翻開最後幾頁！前往【故事結局 (p.140-144)】➡️
+        </button>
+      </div>
+
+      <!-- ==========================================
+           第四分頁：故事結局 (第 140 頁至 144 頁)
+           ========================================== -->
+      <div id="tab-4" class="tab-content hidden animate-fade-in">
+        <div class="flex items-center justify-between mb-3">
+          <span class="bg-rose-900 text-amber-200 text-xs font-bold px-3 py-1 rounded-full">故事結局：消消口香糖與重新出發</span>
+          <span class="text-xs text-gray-500 font-bold">進度 4 / 6</span>
+        </div>
+
+        <!-- 互動翻頁書閱讀器（第 140 頁至 144 頁） -->
+        <div id="flipbook-container-4" class="mb-5"></div>
+
+        <!-- 結局閱讀後的小組反思小站 -->
+        <div class="bg-amber-50/90 border-2 border-[#b48a3e] rounded-2xl p-5 mb-5">
+          <h3 class="text-lg font-black text-[#3b0764] mb-2">
+            💭 【結局思辨小站】讀完第 140–144 頁後，想一想：
+          </h3>
+          <p class="text-sm text-gray-700 mb-3">
+            嚼完淡藍色包裝的<strong>《消消口香糖》</strong>回到小巷後，立花響已經完全忘記剛剛在比賽舞台上的恐怖經歷了，但為什麼他卻覺得<strong>「今天不像平時那麼討厭上鋼琴課」</strong>呢？
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button id="ending-opt-a" onclick="chooseEndingReflection('A')" class="choice-card p-3.5 rounded-xl text-left">
+              <span class="inline-block bg-purple-100 text-purple-900 font-bold px-2 py-0.5 rounded text-xs mb-1">想法 A</span>
+              <p class="font-bold text-sm text-gray-900">心靈留下了「比挨罵更可怕」的深刻感受</p>
+              <p class="text-xs text-gray-600 mt-0.5">雖然記憶消除了，但「想靠作弊卻當眾出糗」的教訓讓響明白：面對嚴格老師練琴，其實一點也不可怕！</p>
+            </button>
+            <button id="ending-opt-b" onclick="chooseEndingReflection('B')" class="choice-card p-3.5 rounded-xl text-left">
+              <span class="inline-block bg-emerald-100 text-emerald-900 font-bold px-2 py-0.5 rounded text-xs mb-1">想法 B</span>
+              <p class="font-bold text-sm text-gray-900">體驗過美妙琴聲後，心裡產生了想靠自己彈好的勇氣</p>
+              <p class="text-xs text-gray-600 mt-0.5">他親耳聽過自己彈出〈土耳其進行曲〉的美好，也學會了不逃避，願意重新踏進鋼琴教室。</p>
+            </button>
+          </div>
+          <div id="ending-feedback" class="hidden mt-4 p-3.5 bg-white rounded-xl border border-purple-300 text-sm text-gray-800 leading-relaxed animate-fade-in"></div>
+        </div>
+
+        <button id="ending-next-btn" onclick="unlockAndGo(5)" class="w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+          📦 進入延伸挑戰：【延伸一：錢天堂商品說明書】➡️
+        </button>
+      </div>
+
+      <!-- ==========================================
+           延伸關卡一：「錢天堂商品說明書」規格配對
+           ========================================== -->
+      <div id="tab-5" class="tab-content hidden animate-fade-in">
+        <div class="flex items-center justify-between mb-3">
+          <span class="bg-amber-800 text-amber-100 text-xs font-bold px-3 py-1 rounded-full">延伸關卡一：細節精讀與規則檢索</span>
+          <span class="text-xs text-gray-500 font-bold">進度 5 / 6</span>
+        </div>
+
+        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-1">
+          📋 錢天堂商品檔案庫：規格配對挑戰
+        </h3>
+        <p class="text-sm text-gray-600 mb-5">
+          立花響當初就是因為沒看清楚包裝說明才惹出大麻煩！請點擊下拉選單，幫這兩樣神奇零食配對正確的說明內容：
+        </p>
+
+        <div class="space-y-4 mb-6">
+          <!-- 配對 1 -->
+          <div class="bg-amber-50/80 border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="font-bold text-gray-800">
+              <span class="text-purple-800">1. 購買《音樂果》的幸運硬幣：</span>
+            </div>
+            <select id="spec-1" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-purple-700">
+              <option value="">⏱️ 請選擇正確說明...</option>
+              <option value="wrong1">昭和五十年的五元硬幣</option>
+              <option value="correct">平成十三年的十元硬幣</option>
+              <option value="wrong2">令和元年的五十元硬幣</option>
+            </select>
+          </div>
+
+          <!-- 配對 2 -->
+          <div class="bg-amber-50/80 border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="font-bold text-gray-800">
+              <span class="text-purple-800">2. 《音樂果》裡面的餅乾形狀：</span>
+            </div>
+            <select id="spec-2" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-purple-700">
+              <option value="">⏱️ 請選擇正確說明...</option>
+              <option value="wrong1">迷你鋼琴與小提琴形狀</option>
+              <option value="wrong2">五線譜與作曲家頭像形狀</option>
+              <option value="correct">高音譜記號、八分音符等音樂記號</option>
+            </select>
+          </div>
+
+          <!-- 配對 3 -->
+          <div class="bg-amber-50/80 border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="font-bold text-gray-800">
+              <span class="text-purple-800">3. 《音樂果》包裝背面的隱藏限制：</span>
+            </div>
+            <select id="spec-3" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-white font-bold text-sm text-[#78350f] sm:w-80 focus:outline-none focus:border-purple-700">
+              <option value="">⏱️ 請選擇正確說明...</option>
+              <option value="correct">每袋只有一位作曲家口味，無法彈其他人的曲子</option>
+              <option value="wrong1">吃完後只能維持十分鐘，時間到就會失效</option>
+              <option value="wrong2">必須搭配白開水吞服，否則會肚子痛</option>
+            </select>
+          </div>
+
+          <!-- 配對 4 -->
+          <div class="bg-blue-50/80 border-2 border-blue-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="font-bold text-gray-800">
+              <span class="text-blue-900">4. 《消消口香糖》的外觀與神奇功效：</span>
+            </div>
+            <select id="spec-4" class="p-2.5 border-2 border-blue-400 rounded-lg bg-white font-bold text-sm text-blue-900 sm:w-80 focus:outline-none focus:border-purple-700">
+              <option value="">⏱️ 請選擇正確說明...</option>
+              <option value="wrong1">粉紅色包裝紙，能讓人瞬間學會所有樂器</option>
+              <option value="correct">淡藍色包裝紙，能消除之前的時間和發生的事</option>
+              <option value="wrong2">金黃色包裝紙，能讓嚴格的老師變得超溫柔</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="verifyExtension1()" class="w-full py-3.5 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+          ✔️ 驗證商品說明書，解鎖【延伸二：心情溫度計】➡️
+        </button>
+      </div>
+
+      <!-- ==========================================
+           延伸關卡二：立花響的「心情變化溫度計」
+           ========================================== -->
+      <div id="tab-6" class="tab-content hidden animate-fade-in">
+        <div class="flex items-center justify-between mb-3">
+          <span class="bg-emerald-800 text-emerald-100 text-xs font-bold px-3 py-1 rounded-full">延伸關卡二：角色心理轉折分析</span>
+          <span class="text-xs text-gray-500 font-bold">進度 6 / 6</span>
+        </div>
+
+        <h3 class="text-lg sm:text-xl font-black text-[#3b0764] mb-1">
+          🌡️ 立花響的「心情變化溫度計」
+        </h3>
+        <p class="text-sm text-gray-600 mb-5">
+          從故事開頭到結尾，立花響的心情經歷了四次大轉彎！請為每個時間點配對正確的<strong>心情與原因</strong>：
+        </p>
+
+        <div class="space-y-4 mb-6">
+          <!-- 階段 1 -->
+          <div class="bg-white border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div>
+              <span class="text-xs font-bold text-purple-700 block">階段 1（故事開頭）</span>
+              <span class="font-bold text-gray-900 text-base">🚶 走去鋼琴教室的路上</span>
+            </div>
+            <select id="mood-1" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-purple-700">
+              <option value="">🌡️ 選擇當時的心情與原因...</option>
+              <option value="correct">😰 害怕逃避（怕被嚴格的佐佐木老師罵）</option>
+              <option value="wrong1">😎 得意忘形（以為自己是鋼琴天才）</option>
+              <option value="wrong2">😱 驚慌後悔（在比賽台上雙手不會動）</option>
+            </select>
+          </div>
+
+          <!-- 階段 2 -->
+          <div class="bg-white border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div>
+              <span class="text-xs font-bold text-purple-700 block">階段 2（吃完音樂果後）</span>
+              <span class="font-bold text-gray-900 text-base">🏆 課堂上彈出完美樂曲、受邀採訪後</span>
+            </div>
+            <select id="mood-2" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-purple-700">
+              <option value="">🌡️ 選擇當時的心情與原因...</option>
+              <option value="wrong1">😊 輕鬆勇敢（決定靠自己好好練琴）</option>
+              <option value="correct">😎 得意忘形（以為自己是天才，不再練琴）</option>
+              <option value="wrong2">😰 害怕逃避（不想去上鋼琴課）</option>
+            </select>
+          </div>
+
+          <!-- 階段 3 -->
+          <div class="bg-white border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div>
+              <span class="text-xs font-bold text-purple-700 block">階段 3（鋼琴比賽當天）</span>
+              <span class="font-bold text-gray-900 text-base">🎹 看到舒曼的〈幻想曲〉樂譜、雙手不動時</span>
+            </div>
+            <select id="mood-3" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-purple-700">
+              <option value="">🌡️ 選擇當時的心情與原因...</option>
+              <option value="wrong1">😎 得意忘形（覺得自己一定會拿冠軍）</option>
+              <option value="wrong2">😊 輕鬆勇敢（覺得遲到也沒關係）</option>
+              <option value="correct">😱 驚慌後悔（看不懂樂譜，後悔靠作弊成名）</option>
+            </select>
+          </div>
+
+          <!-- 階段 4 -->
+          <div class="bg-white border-2 border-[#d6c7a9] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+            <div>
+              <span class="text-xs font-bold text-purple-700 block">階段 4（故事結尾）</span>
+              <span class="font-bold text-gray-900 text-base">🫧 嚼完《消消口香糖》回到小巷後</span>
+            </div>
+            <select id="mood-4" class="p-2.5 border-2 border-[#b48a3e] rounded-lg bg-[#fffdf9] font-bold text-sm text-gray-800 sm:w-80 focus:outline-none focus:border-purple-700">
+              <option value="">🌡️ 選擇當時的心情與原因...</option>
+              <option value="correct">😊 輕鬆勇敢（忘記可怕經歷，不再討厭上鋼琴課）</option>
+              <option value="wrong1">😎 得意忘形（決定立刻再去買十包音樂果）</option>
+              <option value="wrong2">😱 驚慌後悔（被佐佐木老師趕出鋼琴教室）</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="verifyExtension2()" class="w-full py-3.5 bg-gradient-to-r from-emerald-700 to-emerald-900 text-amber-100 font-bold rounded-xl shadow-md hover:opacity-95 transition">
+          🏆 完成所有挑戰！領取【3D 閱讀特質卡】➡️
+        </button>
+      </div>
+    </main>
+
+    <!-- ==========================================
+         大結局榮譽畫面：3D 雙面翻轉閱讀特質卡
+         ========================================== -->
+    <section id="finale-screen" class="hidden animate-fade-in">
+      <div class="text-center mb-6">
+        <div class="inline-block bg-amber-100 text-amber-900 border border-amber-400 px-4 py-1 rounded-full text-xs font-black mb-2">
+          🎉 恭喜全組完成《音樂果》互動劇場與延伸挑戰！
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-[#3b0764]">
+          🏅 錢天堂閱讀品格認證獎章
+        </h2>
+        <p class="text-sm text-gray-600 mt-1">
+          請點擊下方的 <strong>3D 紀念卡片</strong>，翻開背面查看紅子老闆娘送給你們的智慧語錄！
+        </p>
+      </div>
+
+      <!-- 首席智慧小店長特別榮譽橫幅 -->
+      <div id="master-badge-banner" class="hidden bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-[#2e1065] rounded-2xl p-4 mb-6 text-center shadow-lg border-2 border-[#78350f]">
+        <div class="text-2xl mb-1">👑 特別榮譽：錢天堂「首席智慧小店長」👑</div>
+        <p class="text-xs sm:text-sm font-bold">
+          太厲害了！你們在每一幕都做出了最謹慎誠實的選擇，而且延伸關卡全部一次通關！
+        </p>
+      </div>
+
+      <!-- 三張 3D 翻轉特質卡 -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <!-- 卡片 1 -->
+        <div onclick="this.querySelector('.flip-inner').classList.toggle('is-flipped')" class="flip-perspective h-56 cursor-pointer select-none">
+          <div class="flip-inner">
+            <div class="flip-face bg-gradient-to-b from-[#3b0764] to-[#1e1b4b] border-2 border-amber-400 p-5 flex flex-col items-center justify-center text-center text-white shadow-lg">
+              <div class="text-4xl mb-2">🛡️</div>
+              <h3 class="text-lg font-black text-amber-300">誠實勇氣卡</h3>
+              <p class="text-xs text-amber-100/80 mt-2">拒絕作弊誘惑，勇於面對真實的自己</p>
+              <span class="mt-4 text-[11px] bg-white/15 px-3 py-1 rounded-full text-amber-200">👆 點擊翻面</span>
+            </div>
+            <div class="flip-face flip-back bg-[#fffbeb] border-2 border-amber-500 p-5 flex flex-col items-center justify-center text-center text-[#78350f] shadow-lg">
+              <div class="text-xs font-black text-purple-800 mb-1">紅子老闆娘的點評</div>
+              <p class="text-sm font-bold leading-relaxed">
+                「面對唾手可得的作弊零食卻能勇敢說『不』，這份誠實比任何天才光環都還要珍貴呢！」
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片 2 -->
+        <div onclick="this.querySelector('.flip-inner').classList.toggle('is-flipped')" class="flip-perspective h-56 cursor-pointer select-none">
+          <div class="flip-inner">
+            <div class="flip-face bg-gradient-to-b from-[#78350f] to-[#451a03] border-2 border-amber-400 p-5 flex flex-col items-center justify-center text-center text-white shadow-lg">
+              <div class="text-4xl mb-2">🔍</div>
+              <h3 class="text-lg font-black text-amber-300">三思而行卡</h3>
+              <p class="text-xs text-amber-100/80 mt-2">看清規則與限制，不因得意忘形而大意</p>
+              <span class="mt-4 text-[11px] bg-white/15 px-3 py-1 rounded-full text-amber-200">👆 點擊翻面</span>
+            </div>
+            <div class="flip-face flip-back bg-[#fffbeb] border-2 border-amber-500 p-5 flex flex-col items-center justify-center text-center text-[#78350f] shadow-lg">
+              <div class="text-xs font-black text-purple-800 mb-1">紅子老闆娘的點評</div>
+              <p class="text-sm font-bold leading-relaxed">
+                「神奇零食總有使用規則，仔細閱讀說明、聽進別人的提醒，才不會讓好運變成危機喔！」
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片 3 -->
+        <div onclick="this.querySelector('.flip-inner').classList.toggle('is-flipped')" class="flip-perspective h-56 cursor-pointer select-none">
+          <div class="flip-inner">
+            <div class="flip-face bg-gradient-to-b from-[#065f46] to-[#022c22] border-2 border-amber-400 p-5 flex flex-col items-center justify-center text-center text-white shadow-lg">
+              <div class="text-4xl mb-2">🎹</div>
+              <h3 class="text-lg font-black text-amber-300">踏實成長卡</h3>
+              <p class="text-xs text-amber-100/80 mt-2">不靠不勞而獲，願意一步步累積真本事</p>
+              <span class="mt-4 text-[11px] bg-white/15 px-3 py-1 rounded-full text-amber-200">👆 點擊翻面</span>
+            </div>
+            <div class="flip-face flip-back bg-[#ecfdf5] border-2 border-emerald-600 p-5 flex flex-col items-center justify-center text-center text-emerald-950 shadow-lg">
+              <div class="text-xs font-black text-emerald-800 mb-1">紅子老闆娘的點評</div>
+              <p class="text-sm font-bold leading-relaxed">
+                「只有靠自己流汗練習得來的實力，才不會在關鍵時刻背叛你。加油吧，小小音樂家！」
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 故事完整結局提示卡（已獨立成第4分頁 p.140-144） -->
+      <div class="bg-[#fffdf7] border-2 border-[#581c87] rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="text-sm text-gray-800">
+          <span class="font-black text-[#3b0764]">📖 想重溫書本原文頁面嗎？</span>
+          <span>隨時可回到各幕或「故事結局 (p.140-144)」分頁翻閱原著掃描書頁！</span>
+        </div>
+        <button onclick="returnToTheater(4)" class="shrink-0 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold rounded-xl text-xs sm:text-sm border border-purple-400 transition">
+          翻閱故事結局 (p.140-144)
+        </button>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="returnToTheater(1)" class="flex-1 py-3 bg-[#f3ead3] hover:bg-[#e6d6b3] text-[#5c3a18] font-bold rounded-xl border border-[#b48a3e] transition">
+          🔄 返回劇場回顧關卡
+        </button>
+        <button onclick="goHome()" class="flex-1 py-3 bg-gradient-to-r from-[#581c87] to-[#3b0764] text-amber-200 font-bold rounded-xl shadow hover:opacity-95 transition">
+          🏠 回到活動首頁
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==========================================
+       JavaScript 互動邏輯 + 3D 翻頁書引擎
+       ========================================== -->
+  <script>
+    // 教師授權碼
+    const TEACHER_PIN = "221b";
+
+    // 關卡解鎖狀態 (共 6 個分頁)
+    const unlockedTabs = {
+      1: true,
+      2: false,
+      3: false,
+      4: false,
+      5: false,
+      6: false
+    };
+
+    // 記錄學生的首試智慧選擇 (用於判斷是否頒發首席小店長榮譽)
+    const firstTryChoices = {
+      act1: null,
+      act2: null,
+      act3: null,
+      ext1Perfect: false,
+      ext2Perfect: false
+    };
+    let ext1Attempts = 0;
+    let ext2Attempts = 0;
+
+    // ==========================================
+    // 四大章節書頁圖片檔名清單 (對應同資料夾內的 34 張圖片)
+    // 系統預設讀取 .jpg，若為 .png 亦會自動切換載入
+    // ==========================================
+    const BOOK_SECTIONS = {
+      1: {
+        id: 1,
+        title: "故事閱讀（一）：神秘小巷的奇遇",
+        pageRangeLabel: "第 114 頁 ～ 第 123 頁",
+        pages: [
+          { baseName: "114", label: "第 114 頁", fallbackText: "【4 音樂果】\n「真不想去。」響走在去鋼琴教室的路上，滿腦子都想著這句話。他真的很不想去上鋼琴課，因為佐佐木老師很嚴格，每次都挨罵。" },
+          { baseName: "115", label: "第 115 頁", fallbackText: "響被〈土耳其進行曲〉的琴聲吸引，走進昏暗的小巷深處，看見一個身穿和服、又高又大的白髮阿姨正在彈鋼琴。" },
+          { baseName: "116", label: "第 116 頁", fallbackText: "【插畫頁】身穿古錢幣和服的紅子老闆娘正在專注彈鋼琴，立花響在一旁看得入神。" },
+          { baseName: "117", label: "第 117 頁", fallbackText: "一雙肥肥嫩嫩的大手好像變魔術般在鍵盤上滑動。樂曲結束後，阿姨轉過頭說：「啊喲，沒想到有聽眾光臨。」" },
+          { baseName: "118", label: "第 118 頁", fallbackText: "阿姨說這架破舊的鋼琴在呼喚她，希望她最後再為它彈奏最喜愛的莫札特樂曲。" },
+          { baseName: "119", label: "第 119 頁", fallbackText: "響心想：如果我也可以彈得像她一樣，就不會整天被鋼琴教室的老師罵了。" },
+          { baseName: "120", label: "第 120 頁", fallbackText: "響小聲說出自己正在練這首曲子但老是彈不好，不想去上鋼琴課。阿姨露出奇妙的笑容，從袖子裡拿出東西。" },
+          { baseName: "121", label: "第 121 頁", fallbackText: "那是一小袋寫滿五線譜、寫著「音樂果」的零食。「只要吃了音樂果，就可以成為音樂高手。紅子我也是吃了這個，才會彈鋼琴。」" },
+          { baseName: "122", label: "第 122 頁", fallbackText: "「這是莫札特風味的音樂果，只要十元。」響拿出平成十三年的十元硬幣交給紅子，接過了音樂果。" },
+          { baseName: "123(0)", label: "第 123 頁（上）", fallbackText: "紅子臨走時警告他：「音樂果可以讓人充分享受音樂，但要小心，千萬不要得意忘形。」響打開袋子，裡面裝滿音符形狀的小餅乾。" }
+        ]
+      },
+      2: {
+        id: 2,
+        title: "故事閱讀（二）：一夕成名的鋼琴神童",
+        pageRangeLabel: "第 123 頁 ～ 第 129 頁",
+        pages: [
+          { baseName: "123", label: "第 123 頁（下）", fallbackText: "個性急躁的響當場打開袋子，發現裡面有高音譜記號、八分音符、二分音符和延音符號形狀的金黃色小餅乾。" },
+          { baseName: "124", label: "第 124 頁", fallbackText: "音樂果有淡淡的鹹味，放進嘴裡像會跳動。響欲罷不能地吃完整包音樂果，無所畏懼地前往鋼琴教室。" },
+          { baseName: "125", label: "第 125 頁", fallbackText: "走進教室時，佐佐木老師一臉嚴肅地責備他遲到，要他趕快坐到鋼琴前。" },
+          { baseName: "126", label: "第 126 頁", fallbackText: "響把手放在鍵盤上，腦海中突然充滿音樂，手指不由自主地完美彈奏出〈土耳其進行曲〉！" },
+          { baseName: "127", label: "第 127 頁", fallbackText: "樂曲結束後響仍接連彈出許多曲子，其他班的老師全都聚集在身後驚嘆，佐佐木老師興奮地大喊：「這個學生是天才！」" },
+          { baseName: "128", label: "第 128 頁", fallbackText: "響很快就成為名人，人人都稱他是「鋼琴神童」。他也漸漸覺得自己真的是天才，平時不再練習鋼琴。" },
+          { baseName: "129(0)", label: "第 129 頁（上）", fallbackText: "不久後有人邀請他參加大型鋼琴比賽。響自信滿滿，不加思索地答應參加，比賽前一星期收到指定曲樂譜卻連看都不看。" }
+        ]
+      },
+      3: {
+        id: 3,
+        title: "故事閱讀（三）：大賽舞台危機與休息室考驗",
+        pageRangeLabel: "第 129 頁 ～ 第 140 頁",
+        pages: [
+          { baseName: "129", label: "第 129 頁（下）", fallbackText: "比賽當天，主辦單位包下了巨大的音樂廳，得知天才少年會參賽，現場座無虛席。" },
+          { baseName: "130", label: "第 130 頁", fallbackText: "輪到響上場了，他坐到鋼琴前看著樂譜——那是舒曼作曲的〈幻想曲〉，寫滿複雜音符，響完全看不懂。" },
+          { baseName: "131", label: "第 131 頁", fallbackText: "無論響等了多久，手指始終一動也不動！觀眾席紛紛議論起來，響全身開始冒出冷汗。" },
+          { baseName: "132", label: "第 132 頁", fallbackText: "響踢開椅子衝下舞臺，跑進休息室鎖上門。他翻出書包裡空空的音樂果袋子，想找食品公司的電話。" },
+          { baseName: "133", label: "第 133 頁", fallbackText: "袋子背面寫著音樂果有莫札特、羅西尼、巴赫、舒伯特、柴可夫斯基等豐富風味。" },
+          { baseName: "134", label: "第 134 頁", fallbackText: "注意事項寫明：「每袋音樂果只有一位音樂家的口味，能夠完美演奏那位音樂家的樂曲，卻無法演奏其他作曲家的樂曲。」" },
+          { baseName: "135", label: "第 135 頁", fallbackText: "門外傳來老師、媽媽與記者的敲門聲。響想起紅子阿姨說的「不要得意忘形」，才終於了解這句話的意思。" },
+          { baseName: "136", label: "第 136 頁", fallbackText: "【插畫頁】響獨自坐在休息室角落抱頭懊悔，地上散落著樂譜與琴袋。" },
+          { baseName: "137", label: "第 137 頁", fallbackText: "響流著淚後悔：「不可以靠並不是真正的實力，和腳踏實地努力的人一較高下。」門外有人喊著要去拿備用鑰匙！" },
+          { baseName: "138", label: "第 138 頁", fallbackText: "突然外面安靜下來，紅子走進休息室，說外面的人只是睡著了，並為「音樂果過期」向響鞠躬道歉。" },
+          { baseName: "139", label: "第 139 頁", fallbackText: "紅子打開小包裹，裡面有莫札特、貝多芬、巴赫……當然也有「舒曼風味」的音樂果！" },
+          { baseName: "140(0)", label: "第 140 頁（上）", fallbackText: "「請你隨意挑選任何風味，不需要再付錢。」響極度渴望舒曼風味，只要有這一包就能度過危機……" }
+        ]
+      },
+      4: {
+        id: 4,
+        title: "故事結局：消消口香糖的奇蹟",
+        pageRangeLabel: "第 140 頁 ～ 第 144 頁",
+        pages: [
+          { baseName: "140", label: "第 140 頁（下）", fallbackText: "「但是，最終還是一樣，我絕不能靠這種方法。」響低著頭拒絕了舒曼音樂果。" },
+          { baseName: "141", label: "第 141 頁", fallbackText: "響流著眼淚說想回到還沒吃音樂果之前。紅子於是拿出一片用淡藍色紙包著的「消消口香糖」。" },
+          { baseName: "142", label: "第 142 頁", fallbackText: "響把口香糖放進嘴裡專心祈禱，腦袋漸漸變空，消消口香糖消除了之前的時間和發生的事。" },
+          { baseName: "143", label: "第 143 頁", fallbackText: "響回過神發現自己站在小巷內，趕緊快步走向鋼琴教室，心裡卻發現今天不像平時那麼討厭上鋼琴課了。" },
+          { baseName: "144", label: "第 144 頁", fallbackText: "【故事尾聲】響微微偏著頭一邊想，一邊走向鋼琴教室。立花響。十歲。平成十三年的十元硬幣。（〈音樂果〉完）" }
+        ]
+      }
+    };
+
+    // 儲存各章節目前翻到的頁碼索引
+    const bookState = {
+      1: { currentIndex: 0 },
+      2: { currentIndex: 0 },
+      3: { currentIndex: 0 },
+      4: { currentIndex: 0 }
+    };
+
+    // 記錄已確認的圖片實際副檔名 (例如 "114" -> "114.jpg" 或 "114.png")
+    const resolvedImgSrcMap = {};
+
+    // 目前全螢幕放大檢視的章節編號
+    let activeZoomBookId = null;
+
+    // 圖片副檔名自動相容處理（支援 .jpg / .png / .JPG / .PNG，若在無圖檔環境預覽則顯示故事文本）
+    function handleBookImgError(imgEl, baseName, fallbackText) {
+      const exts = [".jpg", ".png", ".JPG", ".PNG", ".jpeg"];
+      let step = parseInt(imgEl.dataset.tryStep || "0", 10) + 1;
+      if (step < exts.length) {
+        imgEl.dataset.tryStep = String(step);
+        imgEl.src = baseName + exts[step];
+      } else {
+        // 若所有副檔名皆找不到檔案（例如在線上預覽視窗），自動切換顯示該頁文字內容
+        const wrapper = imgEl.parentElement;
+        if (wrapper) {
+          wrapper.innerHTML = `
+            <div class="min-h-[230px] sm:min-h-[270px] w-full flex flex-col justify-between p-4 sm:p-6 text-gray-800 text-left select-none">
+              <div>
+                <div class="flex items-center justify-between border-b-2 border-amber-700/20 pb-2 mb-3">
+                  <span class="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded">圖檔：${baseName}.jpg / .png</span>
+                  <span class="text-[11px] text-gray-400">線上預覽文字模式</span>
+                </div>
+                <p class="text-base sm:text-lg leading-loose whitespace-pre-line font-medium text-[#2b1e16]">${fallbackText}</p>
+              </div>
+              <div class="mt-4 pt-2 border-t border-dashed border-amber-300 text-center text-xs text-amber-800/80">
+                💡 將本 HTML 檔與圖片放進「music candy」同一資料夾開啟，此處即會自動顯示原書掃描圖！
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function handleBookImgLoad(imgEl, baseName) {
+      resolvedImgSrcMap[baseName] = imgEl.getAttribute("src");
+    }
+
+    // 播放輕柔的紙張翻頁音效 (Web Audio API 合成，無外部依賴)
+    function playPageTurnSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const bufferSize = ctx.sampleRate * 0.14;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.setValueAtTime(1100, ctx.currentTime);
+        filter.Q.value = 1.2;
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        noise.start();
+      } catch (e) {
+        // 忽略瀏覽器音訊限制
+      }
+    }
+
+    // ==========================================
+    // 渲染 3D 翻頁揭書閱讀器
+    // ==========================================
+    function renderFlipBook(bookId) {
+      const container = document.getElementById(`flipbook-container-${bookId}`);
+      if (!container) return;
+
+      const section = BOOK_SECTIONS[bookId];
+      const state = bookState[bookId];
+      const totalPages = section.pages.length;
+
+      if (state.currentIndex >= totalPages) state.currentIndex = totalPages - 1;
+      if (state.currentIndex < 0) state.currentIndex = 0;
+
+      const idx = state.currentIndex;
+      const currentItem = section.pages[idx];
+      const pageBadgeText = `${currentItem.label}（${idx + 1} / ${totalPages}）`;
+      const initialSrc = resolvedImgSrcMap[currentItem.baseName] || `${currentItem.baseName}.jpg`;
+
+      // 產生頁碼快速跳轉膠囊按鈕
+      let pillsHtml = "";
+      for (let i = 0; i < totalPages; i++) {
+        const activeClass = i === idx
+          ? "bg-amber-400 text-[#2e1065] font-black ring-2 ring-amber-200"
+          : "bg-white/15 text-amber-100 hover:bg-white/30";
+        pillsHtml += `<button onclick="jumpBookPage(${bookId}, ${i})" class="px-2.5 py-1 rounded-full text-xs transition ${activeClass}">${section.pages[i].baseName}</button>`;
+      }
+
+      // 轉義 fallbackText 以便安全放入 HTML 屬性中
+      const safeFallback = currentItem.fallbackText.replace(/"/g, "&quot;").replace(/\n/g, "\\n");
+
+      container.innerHTML = `
+        <div class="book-cover rounded-2xl p-3 sm:p-5 text-white">
+          <!-- 書本頂部工具列：章節標題 + 放大閱讀按鈕 -->
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-amber-400/30">
+            <div>
+              <h4 class="font-black text-amber-300 text-sm sm:text-base flex items-center gap-1.5">
+                <span>📖 ${section.title}</span>
+                <span class="bg-amber-400/20 text-amber-200 text-xs px-2 py-0.5 rounded-full">${section.pageRangeLabel}</span>
+              </h4>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="openZoomModal(${bookId})" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-[#2e1065] font-black rounded-lg text-xs shadow transition flex items-center gap-1">
+                <span>🔍 放大閱讀</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3D 翻頁書舞台 (支援左右點擊與觸控滑動翻頁) -->
+          <div class="book-stage relative my-2 px-1 sm:px-3">
+            <div id="book-paper-${bookId}" 
+              ontouchstart="handleBookTouchStart(event)" 
+              ontouchend="handleBookTouchEnd(${bookId}, event)"
+              class="book-paper rounded-r-xl rounded-l-sm overflow-hidden transition-all">
+              
+              <!-- 書頁頂部頁碼標示 -->
+              <div class="bg-[#f5eedc] px-4 py-1.5 border-b border-[#e2d6bc] flex items-center justify-between text-xs font-bold text-[#78350f]">
+                <span>神奇柑仔店 4〈音樂果〉</span>
+                <span>${pageBadgeText}</span>
+              </div>
+
+              <!-- 實際書頁內容區 -->
+              <div id="book-content-${bookId}" class="relative">
+                <div class="w-full flex flex-col items-center justify-center min-h-[260px] sm:min-h-[360px] select-none">
+                  <img src="${initialSrc}" alt="${pageBadgeText}" data-try-step="0"
+                    onload="handleBookImgLoad(this, '${currentItem.baseName}')"
+                    onerror="handleBookImgError(this, '${currentItem.baseName}', '${safeFallback}')"
+                    class="max-h-[480px] w-auto max-w-full object-contain rounded shadow-sm mx-auto pointer-events-none">
+                </div>
+              </div>
+
+              <!-- 左右兩側快捷點擊翻頁感應區 (點書頁左右邊緣即可翻頁) -->
+              <button onclick="flipBookPage(${bookId}, -1)" aria-label="上一頁"
+                class="hidden sm:flex absolute left-0 top-10 bottom-10 w-12 items-center justify-start pl-2 opacity-0 hover:opacity-100 transition bg-gradient-to-r from-black/15 to-transparent text-amber-900 font-black text-xl">
+                ◀
+              </button>
+              <button onclick="flipBookPage(${bookId}, 1)" aria-label="下一頁"
+                class="hidden sm:flex absolute right-0 top-10 bottom-10 w-12 items-center justify-end pr-2 opacity-0 hover:opacity-100 transition bg-gradient-to-l from-black/15 to-transparent text-amber-900 font-black text-xl">
+                ▶
+              </button>
+            </div>
+          </div>
+
+          <!-- 底部翻頁控制列 + 頁碼快速導覽 -->
+          <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <button onclick="flipBookPage(${bookId}, -1)" ${idx === 0 ? "disabled" : ""}
+              class="w-full sm:w-auto px-4 py-2 rounded-xl font-bold text-sm transition flex items-center justify-center gap-1 ${idx === 0 ? "bg-white/10 text-gray-400 cursor-not-allowed" : "bg-amber-100 hover:bg-white text-[#2e1065] shadow"}">
+              <span>◀ 上一頁</span>
+            </button>
+
+            <div class="flex flex-wrap justify-center gap-1 max-w-md">
+              ${pillsHtml}
+            </div>
+
+            <button onclick="flipBookPage(${bookId}, 1)" ${idx === totalPages - 1 ? "disabled" : ""}
+              class="w-full sm:w-auto px-4 py-2 rounded-xl font-bold text-sm transition flex items-center justify-center gap-1 ${idx === totalPages - 1 ? "bg-white/10 text-gray-400 cursor-not-allowed" : "bg-amber-400 hover:bg-amber-300 text-[#2e1065] font-black shadow"}">
+              <span>下一頁 ▶</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // 執行 3D 翻頁動作
+    function flipBookPage(bookId, direction) {
+      const section = BOOK_SECTIONS[bookId];
+      const state = bookState[bookId];
+      const totalPages = section.pages.length;
+      const targetIndex = state.currentIndex + direction;
+
+      if (targetIndex < 0 || targetIndex >= totalPages) return;
+
+      const paperEl = document.getElementById(`book-paper-${bookId}`);
+      const contentEl = document.getElementById(`book-content-${bookId}`);
+
+      if (paperEl && contentEl) {
+        // 複製當前畫面作為 3D 翻轉書頁圖層
+        const leaf = document.createElement("div");
+        leaf.className = `flip-leaf-overlay ${direction > 0 ? "animate-flip-next" : "animate-flip-prev"}`;
+        leaf.innerHTML = contentEl.innerHTML;
+        paperEl.appendChild(leaf);
+
+        playPageTurnSound();
+
+        // 更新頁碼並重新渲染底層新頁面
+        state.currentIndex = targetIndex;
+        setTimeout(() => {
+          renderFlipBook(bookId);
+        }, 260);
+      } else {
+        state.currentIndex = targetIndex;
+        renderFlipBook(bookId);
+      }
+    }
+
+    function jumpBookPage(bookId, targetIndex) {
+      const state = bookState[bookId];
+      if (state.currentIndex === targetIndex) return;
+      const dir = targetIndex > state.currentIndex ? 1 : -1;
+      state.currentIndex = targetIndex - dir;
+      flipBookPage(bookId, dir);
+    }
+
+    // 觸控滑動翻頁支援 (iPad / 平板左右滑動)
+    let touchStartX = 0;
+    function handleBookTouchStart(e) {
+      if (e.touches && e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+      }
+    }
+    function handleBookTouchEnd(bookId, e) {
+      if (!e.changedTouches || e.changedTouches.length === 0) return;
+      const diffX = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(diffX) > 45) {
+        if (diffX < 0) {
+          flipBookPage(bookId, 1); // 向左滑 -> 翻下一頁
+        } else {
+          flipBookPage(bookId, -1); // 向右滑 -> 翻上一頁
+        }
+      }
+    }
+
+    // ==========================================
+    // 全螢幕放大檢視書頁功能
+    // ==========================================
+    function openZoomModal(bookId) {
+      activeZoomBookId = bookId;
+      updateZoomModalContent();
+      document.getElementById("zoom-modal").classList.remove("hidden");
+    }
+
+    function closeZoomModal() {
+      document.getElementById("zoom-modal").classList.add("hidden");
+      activeZoomBookId = null;
+    }
+
+    function flipZoomPage(dir) {
+      if (!activeZoomBookId) return;
+      flipBookPage(activeZoomBookId, dir);
+      setTimeout(() => {
+        updateZoomModalContent();
+      }, 280);
+    }
+
+    function updateZoomModalContent() {
+      if (!activeZoomBookId) return;
+      const section = BOOK_SECTIONS[activeZoomBookId];
+      const state = bookState[activeZoomBookId];
+      const item = section.pages[state.currentIndex];
+      const total = section.pages.length;
+      const initialSrc = resolvedImgSrcMap[item.baseName] || `${item.baseName}.jpg`;
+      const safeFallback = item.fallbackText.replace(/"/g, "&quot;").replace(/\n/g, "\\n");
+
+      document.getElementById("zoom-caption").innerText = `${section.title} — ${item.label} (${state.currentIndex + 1}/${total})`;
+
+      const zoomContainer = document.getElementById("zoom-content");
+      zoomContainer.innerHTML = `
+        <img src="${initialSrc}" alt="${item.label}" data-try-step="0"
+          onload="handleBookImgLoad(this, '${item.baseName}')"
+          onerror="handleBookImgError(this, '${item.baseName}', '${safeFallback}')"
+          class="w-full h-auto max-w-3xl rounded shadow-lg">
+      `;
+    }
+
+    // ==========================================
+    // 通用彈窗、導覽切換與教師快捷跳轉控制
+    // ==========================================
+    function showModal(icon, title, message) {
+      const iconEl = document.getElementById('modal-icon');
+      const titleEl = document.getElementById('modal-title');
+      const msgEl = document.getElementById('modal-message');
+      const modalEl = document.getElementById('custom-modal');
+      if (iconEl) iconEl.innerText = icon;
+      if (titleEl) titleEl.innerText = title;
+      if (msgEl) msgEl.innerText = message;
+      if (modalEl) modalEl.classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('custom-modal').classList.add('hidden');
+    }
+
+    function openTeacherModal() {
+      document.getElementById('teacher-modal').classList.remove('hidden');
+      const input = document.getElementById('teacher-pin-input');
+      if (input) input.focus();
+    }
+
+    function closeTeacherModal() {
+      document.getElementById('teacher-modal').classList.add('hidden');
+    }
+
+    function executeTeacherJump(targetTab) {
+      const pin = document.getElementById('teacher-pin-input').value.trim();
+      if (pin !== TEACHER_PIN) {
+        showModal("❌", "授權碼錯誤", "請輸入正確的教師授權碼（預設為 221b）才能跳轉關卡喔！");
+        return;
+      }
+
+      closeTeacherModal();
+      document.getElementById('welcome-screen').classList.add('hidden');
+
+      if (targetTab === 7) {
+        for (let i = 1; i <= 6; i++) unlockTabUI(i);
+        document.getElementById('main-dashboard').classList.add('hidden');
+        document.getElementById('finale-screen').classList.remove('hidden');
+      } else {
+        for (let i = 1; i <= targetTab; i++) unlockTabUI(i);
+        document.getElementById('finale-screen').classList.add('hidden');
+        document.getElementById('main-dashboard').classList.remove('hidden');
+        switchTab(targetTab);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openFullStoryModal() {
+      document.getElementById('fullstory-modal').classList.remove('hidden');
+    }
+
+    function closeFullStoryModal() {
+      document.getElementById('fullstory-modal').classList.add('hidden');
+    }
+
+    function goHome() {
+      document.getElementById('main-dashboard').classList.add('hidden');
+      document.getElementById('finale-screen').classList.add('hidden');
+      document.getElementById('welcome-screen').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startTheater() {
+      document.getElementById('welcome-screen').classList.add('hidden');
+      document.getElementById('finale-screen').classList.add('hidden');
+      document.getElementById('main-dashboard').classList.remove('hidden');
+      unlockTabUI(1);
+      switchTab(1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function unlockTabUI(tabIndex) {
+      unlockedTabs[tabIndex] = true;
+      const btn = document.getElementById(`nav-btn-${tabIndex}`);
+      if (!btn) return;
+      btn.classList.remove('locked');
+      btn.classList.add('unlocked');
+      const icons = { 1: '🎭 ', 2: '🎭 ', 3: '🎭 ', 4: '📖 ', 5: '📋 ', 6: '🌡️ ' };
+      btn.innerHTML = btn.innerHTML.replace('🔒 ', icons[tabIndex] || '🔓 ');
+    }
+
+    function switchTab(tabIndex) {
+      if (!unlockedTabs[tabIndex]) {
+        showModal("🔒", "關卡尚未解鎖", "請先完成前一關的劇情抉擇或任務挑戰，才能解鎖這個分頁喔！（老師可使用頂部「教師快捷控制」直接跳轉）");
+        return;
+      }
+
+      for (let i = 1; i <= 6; i++) {
+        const content = document.getElementById(`tab-${i}`);
+        const btn = document.getElementById(`nav-btn-${i}`);
+        if (content) content.classList.toggle('hidden', i !== tabIndex);
+        if (btn) btn.classList.toggle('active', i === tabIndex);
+      }
+
+      if (tabIndex >= 1 && tabIndex <= 4) {
+        renderFlipBook(tabIndex);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function unlockAndGo(nextTabIndex) {
+      unlockTabUI(nextTabIndex);
+      switchTab(nextTabIndex);
+    }
+
+    // ==========================================
+    // 第一幕至第三幕：角色抉擇互動回饋邏輯
+    // ==========================================
+    function chooseAct1(option) {
+      if (firstTryChoices.act1 === null) firstTryChoices.act1 = option;
+      const optA = document.getElementById('act1-opt-a');
+      const optB = document.getElementById('act1-opt-b');
+      const feedback = document.getElementById('act1-feedback');
+      const nextBtn = document.getElementById('act1-next-btn');
+
+      optA.classList.remove('selected-a', 'selected-b');
+      optB.classList.remove('selected-a', 'selected-b');
+
+      if (option === 'A') {
+        optA.classList.add('selected-a');
+        feedback.innerHTML = `
+          <div class="flex items-start gap-3">
+            <span class="text-2xl">🍬</span>
+            <div>
+              <h4 class="font-black text-amber-900 text-base mb-1">原著劇情路線：一口氣吃完整包音樂果！</h4>
+              <p class="text-sm text-gray-700 leading-relaxed">
+                立花響在故事裡正是這麼做的！個性急躁的他完全沒把紅子阿姨「千萬不要得意忘形」的警告放在心上，也沒看袋子背面的說明書，就直接吃光了整包餅乾。這雖然讓他馬上彈出驚人的琴聲，卻也埋下了日後在比賽舞台上出糗的危機！
+              </p>
+            </div>
+          </div>
+        `;
+      } else {
+        optB.classList.add('selected-b');
+        feedback.innerHTML = `
+          <div class="flex items-start gap-3">
+            <span class="text-2xl">🧐</span>
+            <div>
+              <h4 class="font-black text-emerald-900 text-base mb-1">智慧選擇！先看清楚包裝背面的注意事項</h4>
+              <p class="text-sm text-gray-700 leading-relaxed">
+                太棒了！如果響當時像你們一樣先翻看袋子背面，就會提前發現<strong>「每袋音樂果只有一位音樂家的口味，無法演奏其他作曲家的樂曲」</strong>這個重要限制！不過在原著故事中，急躁的響直接吃光了整包餅乾，讓我們繼續看看接下來發生了什麼事……
+              </p>
+            </div>
+          </div>
+        `;
+      }
+      feedback.classList.remove('hidden');
+      nextBtn.classList.remove('hidden');
+    }
+
+    function chooseAct2(option) {
+      if (firstTryChoices.act2 === null) firstTryChoices.act2 = option;
+      const optA = document.getElementById('act2-opt-a');
+      const optB = document.getElementById('act2-opt-b');
+      const feedback = document.getElementById('act2-feedback');
+      const nextBtn = document.getElementById('act2-next-btn');
+
+      optA.classList.remove('selected-a', 'selected-b');
+      optB.classList.remove('selected-a', 'selected-b');
+
+      if (option === 'A') {
+        optA.classList.add('selected-a');
+        feedback.innerHTML = `
+          <div class="flex items-start gap-3">
+            <span class="text-2xl">😎</span>
+            <div>
+              <h4 class="font-black text-amber-900 text-base mb-1">原著劇情路線：得意忘形，連樂譜都不看一眼！</h4>
+              <p class="text-sm text-gray-700 leading-relaxed">
+                被大家捧為「天才少年鋼琴家」的響真的飄飄然了！他平時完全不再練琴，甚至在比賽前一星期收到指定曲樂譜時，連打開看一眼都懶得看。完全依賴神奇零食的他，即將在大型音樂廳面臨一場大風暴！
+              </p>
+            </div>
+          </div>
+        `;
+      } else {
+        optB.classList.add('selected-b');
+        feedback.innerHTML = `
+          <div class="flex items-start gap-3">
+            <span class="text-2xl">🎼</span>
+            <div>
+              <h4 class="font-black text-emerald-900 text-base mb-1">踏實的決定！魔法零食不能取代平時的練習</h4>
+              <p class="text-sm text-gray-700 leading-relaxed">
+                你們的想法非常正確！只要打開樂譜看一眼，就會發現比賽指定曲竟然是<strong>舒曼的〈幻想曲〉</strong>，而不是莫札特的作品。可惜原著裡的響太過自滿，連樂譜都沒打開就自信滿滿地走上了比賽舞台……
+              </p>
+            </div>
+          </div>
+        `;
+      }
+      feedback.classList.remove('hidden');
+      nextBtn.classList.remove('hidden');
+    }
+
+    function chooseAct3(option) {
+      if (firstTryChoices.act3 === null) firstTryChoices.act3 = option;
+      const optA = document.getElementById('act3-opt-a');
+      const optB = document.getElementById('act3-opt-b');
+      const feedback = document.getElementById('act3-feedback');
+      const nextBtn = document.getElementById('act3-next-btn');
+
+      optA.classList.remove('selected-a', 'selected-b');
+      optB.classList.remove('selected-a', 'selected-b');
+
+      if (option === 'A') {
+        optA.classList.add('selected-a');
+        feedback.innerHTML = `
+          <div class="flex items-start gap-3">
+            <span class="text-2xl">⚠️</span>
+            <div>
+              <h4 class="font-black text-amber-900 text-base mb-1">紅子老闆娘的反思提問：「那下一次呢？」</h4>
+              <p class="text-sm text-gray-700 leading-relaxed">
+                在這麼多觀眾與電視台攝影機面前，想保住面子是很正常的心情。但請想一想：如果今天靠「舒曼音樂果」混過關了，下次遇到貝多芬、巴赫或蕭邦的曲子時，難道要一輩子靠吃零食才能彈琴嗎？<br>
+                <span class="text-purple-900 font-bold mt-1 block">💡 在原著故事中，響最後抵抗住了誘惑，選擇了「選項 B」！讓我們翻開結局看看紅子給了他什麼！</span>
+              </p>
+            </div>
+          </div>
+        `;
+      } else {
+        optB.classList.add('selected-b');
+        feedback.innerHTML = `
+          <div class="flex items-start gap-3">
+            <span class="text-2xl">🌟</span>
+            <div>
+              <h4 class="font-black text-emerald-900 text-base mb-1">原著經典結局！響低頭拒絕了舒曼音樂果</h4>
+              <p class="text-sm text-gray-700 leading-relaxed">
+                和你們的選擇一模一樣！響流著眼淚拒絕了免費的舒曼音樂果，他明白<strong>「不可以靠並不是真正的實力，和腳踏實地努力的人一較高下」</strong>。因為這份真誠的悔改，紅子才拿出了特別的《消消口香糖》給他！
+              </p>
+            </div>
+          </div>
+        `;
+      }
+      feedback.classList.remove('hidden');
+      nextBtn.classList.remove('hidden');
+    }
+
+    // ==========================================
+    // 第四分頁：故事結局思辨小站互動
+    // ==========================================
+    function chooseEndingReflection(option) {
+      const optA = document.getElementById('ending-opt-a');
+      const optB = document.getElementById('ending-opt-b');
+      const feedback = document.getElementById('ending-feedback');
+
+      optA.classList.remove('selected-a', 'selected-b');
+      optB.classList.remove('selected-a', 'selected-b');
+
+      if (option === 'A') {
+        optA.classList.add('selected-a');
+        feedback.innerHTML = `
+          <span class="font-black text-purple-900">💡 很棒的觀察！</span> 消消口香糖雖然清除了記憶，但心靈深處已經經歷過「靠不勞而獲反而陷入絕境」的震撼。比起當眾出糗，回到鋼琴教室乖乖練琴反而讓人覺得安心又踏實！
+        `;
+      } else {
+        optB.classList.add('selected-b');
+        feedback.innerHTML = `
+          <span class="font-black text-emerald-900">🌟 非常溫暖的體會！</span> 響親身感受過彈出美妙樂曲的快樂，也明白只要自己一步一步練習，總有一天真的能把〈土耳其進行曲〉彈好，所以不再害怕上鋼琴課了！
+        `;
+      }
+      feedback.classList.remove('hidden');
+    }
+
+    // ==========================================
+    // 延伸關卡一：商品說明書配對驗證 (第 5 分頁)
+    // ==========================================
+    function verifyExtension1() {
+      const s1 = document.getElementById('spec-1').value;
+      const s2 = document.getElementById('spec-2').value;
+      const s3 = document.getElementById('spec-3').value;
+      const s4 = document.getElementById('spec-4').value;
+
+      if (!s1 || !s2 || !s3 || !s4) {
+        showModal("⚠️", "還有題目未選擇", "請將 4 項商品說明的下拉選單全部配對完畢喔！");
+        return;
+      }
+
+      ext1Attempts++;
+
+      if (s1 === 'correct' && s2 === 'correct' && s3 === 'correct' && s4 === 'correct') {
+        if (ext1Attempts === 1) firstTryChoices.ext1Perfect = true;
+        showModal("🎉", "商品說明書核對完全正確！", "你們把錢天堂零食的價格、餅乾造型與隱藏限制都查得一清二楚！\n\n🔓 已解鎖最後一關【延伸二：心情溫度計】！");
+        unlockAndGo(6);
+      } else {
+        showModal("🔍", "說明書細節有誤喔！", "有幾項配對選錯了，請再回想一下故事內容，重新檢查下拉選單吧！");
+      }
+    }
+
+    // ==========================================
+    // 延伸關卡二：心情變化溫度計驗證
+    // ==========================================
+    function verifyExtension2() {
+      const m1 = document.getElementById('mood-1').value;
+      const m2 = document.getElementById('mood-2').value;
+      const m3 = document.getElementById('mood-3').value;
+      const m4 = document.getElementById('mood-4').value;
+
+      if (!m1 || !m2 || !m3 || !m4) {
+        showModal("⚠️", "還有心情階段未選擇", "請將 4 個故事階段的心情與原因全部配對完畢喔！");
+        return;
+      }
+
+      ext2Attempts++;
+
+      if (m1 === 'correct' && m2 === 'correct' && m3 === 'correct' && m4 === 'correct') {
+        if (ext2Attempts === 1) firstTryChoices.ext2Perfect = true;
+
+        // 檢查是否達成「首席智慧小店長」全能條件
+        const isMaster = (
+          firstTryChoices.act1 === 'B' &&
+          firstTryChoices.act2 === 'B' &&
+          firstTryChoices.act3 === 'B' &&
+          firstTryChoices.ext1Perfect &&
+          firstTryChoices.ext2Perfect
+        );
+
+        if (isMaster) {
+          document.getElementById('master-badge-banner').classList.remove('hidden');
+        } else {
+          document.getElementById('master-badge-banner').classList.add('hidden');
+        }
+
+        document.getElementById('main-dashboard').classList.add('hidden');
+        document.getElementById('finale-screen').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        showModal("🌡️", "心情溫度計有偏差喔！", "有幾個階段的心情或原因配對錯誤了，請再依照故事順序想一想喔！");
+      }
+    }
+
+    // 返回劇場總控台
+    function returnToTheater(targetTab) {
+      document.getElementById('finale-screen').classList.add('hidden');
+      document.getElementById('main-dashboard').classList.remove('hidden');
+      if (targetTab) {
+        unlockTabUI(targetTab);
+        switchTab(targetTab);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 網頁載入後初始化 3D 翻頁書閱讀器
+    window.addEventListener('DOMContentLoaded', () => {
+      [1, 2, 3, 4].forEach(id => renderFlipBook(id));
+    });
+  </script>
+</body>
+</html>
